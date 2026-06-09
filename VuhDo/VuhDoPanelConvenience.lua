@@ -442,7 +442,7 @@ local function VUHDO_fastCacheInitButton(aPanelNum, aButtonNum)
 	VUHDO_HEALTH_BAR[tTargetButton][6] = VuhDoDummyStatusBar;
 	VUHDO_HEALTH_BAR[tTotButton][6] = VuhDoDummyStatusBar;
 	-- Absorbs
-	VUHDO_HEALTH_BAR[tButton][17] = VUHDO_GLOBAL[tButtonName .. "BgBarAbsBar"];
+	VUHDO_HEALTH_BAR[tButton][17] = VUHDO_GLOBAL[tButtonName .. "BgBarIcBarAbsBar"];
 	VUHDO_HEALTH_BAR[tTargetButton][17] = VuhDoDummyStatusBar;
 	VUHDO_HEALTH_BAR[tTotButton][17] = VuhDoDummyStatusBar;
 	-- Threat
