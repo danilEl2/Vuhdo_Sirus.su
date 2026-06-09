@@ -167,7 +167,7 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
 	aAmountInc = aAmountInc or 0;
 
 	local tHealthPlusAbs = tHealth + tAbs;
-	local tHealthPlusAll = tHealthPlusAbs + aAmountInc;
+	local tHealthPlusInc = tHealth + aAmountInc;
 
 	local tVisualDenom = tMax;
 	if (tAbs > 0 and tHealthPlusAbs > tMax) then
@@ -176,14 +176,9 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
 
 	tHealBarLayout["healthPct"] = min(100, 100 * tHealth / tVisualDenom);
 	tHealBarLayout["absorbEndPct"] = min(100, 100 * tHealthPlusAbs / tVisualDenom);
-	tHealBarLayout["incEndPct"] = min(100, 100 * tHealthPlusAll / tVisualDenom);
+	tHealBarLayout["incStartPct"] = tHealBarLayout["healthPct"];
+	tHealBarLayout["incEndPct"] = min(100, 100 * tHealthPlusInc / tVisualDenom);
 	tHealBarLayout["hasAbsorb"] = tAbs > 0 and anInfo["connected"] and not anInfo["dead"];
-
-	if (tHealBarLayout["hasAbsorb"]) then
-		tHealBarLayout["incStartPct"] = tHealBarLayout["absorbEndPct"];
-	else
-		tHealBarLayout["incStartPct"] = tHealBarLayout["healthPct"];
-	end
 
 	if (aAmountInc <= 0 or not anInfo["connected"] or anInfo["dead"]) then
 		tHealBarLayout["incEndPct"] = tHealBarLayout["incStartPct"];
@@ -256,8 +251,6 @@ local function _VUHDO_updateIncHeal(aUnit)
 	tOverheal = tAmountInc - tInfo["healthmax"] + tInfo["health"];
 	tRatio = tOverheal / tInfo["healthmax"];
 
-	_VUHDO_applyAbsorbBar(tLayout, tAllButtons);
-
 	if (tAmountInc > 0 and tInfo["connected"] and not tInfo["dead"] and tLayout["incEndPct"] > tLayout["incStartPct"]) then
 		tIncColor["R"] = -1;
 
@@ -304,6 +297,8 @@ local function _VUHDO_updateIncHeal(aUnit)
 			end
 		end
 	end
+
+	_VUHDO_applyAbsorbBar(tLayout, tAllButtons);
 
 	for _, tButton in pairs(tAllButtons) do
 		VUHDO_getHealthBar(tButton, 1):SetValue(tLayout["healthPct"]);
