@@ -234,21 +234,6 @@
 						</Anchors>
 						<Frames>
 
-							<StatusBar name="$parentAbsBar" inherits="VuhDoStatusBar">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativePoint="TOPLEFT">
-										<Offset>
-											<AbsDimension x="0" y="0"/>
-										</Offset>
-									</Anchor>
-									<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT">
-										<Offset>
-											<AbsDimension x="0" y="0"/>
-										</Offset>
-									</Anchor>
-								</Anchors>
-							</StatusBar>
-
 							<StatusBar name="$parentHlBar" inherits="VuhDoStatusBar">
 								<Anchors>
 									<Anchor point="TOPLEFT" relativePoint="TOPLEFT">
@@ -414,6 +399,21 @@
 										</Texture>
 									</Layer>
 								</Layers>
+							</StatusBar>
+
+							<StatusBar name="$parentAbsBar" inherits="VuhDoStatusBar">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativePoint="TOPLEFT">
+										<Offset>
+											<AbsDimension x="0" y="0"/>
+										</Offset>
+									</Anchor>
+									<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT">
+										<Offset>
+											<AbsDimension x="0" y="0"/>
+										</Offset>
+									</Anchor>
+								</Anchors>
 							</StatusBar>
 
 						</Frames>

@@ -230,6 +230,7 @@ function VUHDO_positionHealButton(aButton)
 	tAbsBar:SetPoint("TOPLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPLEFT", 0, 0);
 	tAbsBar:SetWidth(sBarScaling["barWidth"]);
 	tAbsBar:SetHeight(sBarHeight);
+	tAbsBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 10);
 
 	-- Player Target
 	VUHDO_initPlayerTargetBorder(aButton, VUHDO_getPlayerTargetFrame(aButton));
@@ -351,7 +352,11 @@ end
 --
 local function VUHDO_initAbsorbBar()
 	local tAbsBar = VUHDO_getHealthBar(sButton, 17);
+	local tHlBar = VUHDO_getHealthBar(sButton, 1);
 	VUHDO_setLlcStatusBarTexture(tAbsBar, VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["TEXTURE"]);
+	if (tHlBar ~= nil) then
+		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 10);
+	end
 	tAbsBar:SetValueRange(0, 0);
 end
 
