@@ -116,7 +116,8 @@ VUHDO_TIMERS = {
 	["RELOAD_RAID"] = 0,
 	["RELOAD_ROSTER"] = 0,
 	["REFRESH_DRAG"] = 0.05,
-	["MIRROR_TO_MACRO"] = 8
+	["MIRROR_TO_MACRO"] = 8,
+	["UPDATE_ABSORBS"] = -1,
 };
 local VUHDO_TIMERS = VUHDO_TIMERS;
 
@@ -387,6 +388,9 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 	elseif ("UNIT_AURA" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 			VUHDO_updateHealth(anArg1, 4); -- VUHDO_UPDATE_DEBUFF
+			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+				VUHDO_refreshAbsorbOnUnit(anArg1);
+			end
 		end
 	elseif ("UNIT_HEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
@@ -1314,6 +1318,15 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 		if (VUHDO_TIMERS["UPDATE_RANGE"] <= 0) then
 			VUHDO_updateAllRange();
 			VUHDO_TIMERS["UPDATE_RANGE"] = VUHDO_CONFIG["RANGE_CHECK_DELAY"] * 0.001;
+		end
+	end
+
+	-- refresh absorbs?
+	if (VUHDO_TIMERS["UPDATE_ABSORBS"] > 0) then
+		VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_TIMERS["UPDATE_ABSORBS"] - aTimeDelta;
+		if (VUHDO_TIMERS["UPDATE_ABSORBS"] <= 0) then
+			VUHDO_refreshAllAbsorbs();
+			VUHDO_TIMERS["UPDATE_ABSORBS"] = (VUHDO_CONFIG["ABSORB_REFRESH_MS"] or 1500) * 0.001;
 		end
 	end
 

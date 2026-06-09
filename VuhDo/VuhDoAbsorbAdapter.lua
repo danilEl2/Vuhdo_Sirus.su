@@ -7,13 +7,19 @@ local UnitGUID = UnitGUID;
 local LibAbsorb = LibStub("SpecializedAbsorbs-1.0", true);
 
 local VUHDO_CONFIG;
+local VUHDO_RAID;
 local VUHDO_RAID_GUIDS;
+local VUHDO_TIMERS;
 local VUHDO_updateHealthBarsFor;
 local VUHDO_updateAllRaidBars;
 
+local VUHDO_ABSORT_CACHE = {};
+
 function VUHDO_absorbAdapterInitBurst()
 	VUHDO_CONFIG = VUHDO_GLOBAL["VUHDO_CONFIG"];
+	VUHDO_RAID = VUHDO_GLOBAL["VUHDO_RAID"];
 	VUHDO_RAID_GUIDS = VUHDO_GLOBAL["VUHDO_RAID_GUIDS"];
+	VUHDO_TIMERS = VUHDO_GLOBAL["VUHDO_TIMERS"];
 	VUHDO_updateHealthBarsFor = VUHDO_GLOBAL["VUHDO_updateHealthBarsFor"];
 	VUHDO_updateAllRaidBars = VUHDO_GLOBAL["VUHDO_updateAllRaidBars"];
 end
@@ -84,8 +90,66 @@ local function VUHDO_absorbUpdateGUIDs(...)
 	for tCnt = 1, select("#", ...) do
 		tUnit = VUHDO_RAID_GUIDS[select(tCnt, ...)];
 		if (tUnit ~= nil) then
+			VUHDO_ABSORT_CACHE[tUnit] = VUHDO_getAbsorbOnUnit(tUnit);
 			VUHDO_updateHealthBarsFor(tUnit, 9); -- VUHDO_UPDATE_INC
 		end
+	end
+end
+
+--
+function VUHDO_clearAbsorbCache()
+	for tUnit in pairs(VUHDO_ABSORT_CACHE) do
+		VUHDO_ABSORT_CACHE[tUnit] = nil;
+	end
+end
+
+--
+function VUHDO_refreshAbsorbOnUnit(aUnit)
+	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false or aUnit == nil) then
+		return false;
+	end
+
+	local tAmount = VUHDO_getAbsorbOnUnit(aUnit);
+	local tCached = VUHDO_ABSORT_CACHE[aUnit] or 0;
+
+	if (tAmount ~= tCached) then
+		VUHDO_ABSORT_CACHE[aUnit] = tAmount;
+		if (VUHDO_updateHealthBarsFor ~= nil) then
+			VUHDO_updateHealthBarsFor(aUnit, 9); -- VUHDO_UPDATE_INC
+		end
+		return true;
+	end
+
+	return false;
+end
+
+--
+local tInfo;
+function VUHDO_refreshAllAbsorbs()
+	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false or VUHDO_RAID == nil) then
+		return;
+	end
+
+	for tUnit, tInfo in pairs(VUHDO_RAID) do
+		if (tInfo["connected"] and not tInfo["dead"]) then
+			VUHDO_refreshAbsorbOnUnit(tUnit);
+		else
+			VUHDO_ABSORT_CACHE[tUnit] = 0;
+		end
+	end
+end
+
+--
+local function VUHDO_setAbsorbRefreshTimer(anIsEnabled)
+	if (VUHDO_TIMERS == nil) then
+		return;
+	end
+
+	if (anIsEnabled) then
+		VUHDO_TIMERS["UPDATE_ABSORBS"] = 0.5;
+	else
+		VUHDO_TIMERS["UPDATE_ABSORBS"] = -1;
+		VUHDO_clearAbsorbCache();
 	end
 end
 
@@ -132,6 +196,11 @@ end
 --
 function VUHDO_setAbsorbEnabled()
 	if (LibAbsorb == nil or VUHDO_isAbsorbsNative()) then
+		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+			VUHDO_setAbsorbRefreshTimer(true);
+		else
+			VUHDO_setAbsorbRefreshTimer(false);
+		end
 		return;
 	end
 
@@ -144,6 +213,8 @@ function VUHDO_setAbsorbEnabled()
 		LibAbsorb.RegisterCallback(VuhDoAbsorbComms, "UnitUpdated", "UnitUpdated");
 		LibAbsorb.RegisterCallback(VuhDoAbsorbComms, "UnitCleared", "UnitCleared");
 		LibAbsorb.RegisterCallback(VuhDoAbsorbComms, "UnitAbsorbed", "UnitAbsorbed");
+		VUHDO_setAbsorbRefreshTimer(true);
+		VUHDO_refreshAllAbsorbs();
 	else
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "EffectApplied");
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "EffectUpdated");
@@ -153,6 +224,7 @@ function VUHDO_setAbsorbEnabled()
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "UnitUpdated");
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "UnitCleared");
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "UnitAbsorbed");
+		VUHDO_setAbsorbRefreshTimer(false);
 		VUHDO_updateAllRaidBars();
 	end
 end

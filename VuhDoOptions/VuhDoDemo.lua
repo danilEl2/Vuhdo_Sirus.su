@@ -390,3 +390,4 @@ function VUHDO_reloadRaidDemoUsers()
 		VUHDO_PLAYER_TARGETS[VUHDO_RAID["raid" .. (VUHDO_CONFIG_TEST_USERS - tCnt)]["name"]] = true;
 	end
 end
+
