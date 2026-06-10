@@ -230,7 +230,7 @@ function VUHDO_positionHealButton(aButton)
 	tAbsBar:SetPoint("TOPLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPLEFT", 0, 0);
 	tAbsBar:SetWidth(sBarScaling["barWidth"]);
 	tAbsBar:SetHeight(sBarHeight);
-	tAbsBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 10);
+	tAbsBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 1);
 
 	-- Player Target
 	VUHDO_initPlayerTargetBorder(aButton, VUHDO_getPlayerTargetFrame(aButton));
@@ -353,9 +353,10 @@ end
 local function VUHDO_initAbsorbBar()
 	local tAbsBar = VUHDO_getHealthBar(sButton, 17);
 	local tHlBar = VUHDO_getHealthBar(sButton, 1);
-	VUHDO_setLlcStatusBarTexture(tAbsBar, VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["TEXTURE"]);
+	local tAbsorbConfig = VUHDO_INDICATOR_CONFIG["CUSTOM"]["ABSORB_BAR"];
+	VUHDO_setLlcStatusBarTexture(tAbsBar, (tAbsorbConfig and tAbsorbConfig["TEXTURE"]) or "Clean");
 	if (tHlBar ~= nil) then
-		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 10);
+		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 1);
 	end
 	tAbsBar:SetValueRange(0, 0);
 end
@@ -374,12 +375,22 @@ end
 local tTextPanel;
 local tNameText;
 local tLifeText;
+local tOvhPanel;
 local tAddHeight;
 local tShadowAlpha, tOutlineText;
 local function VUHDO_initBarTexts(aButton, aHealthBar, aWidth)
 	tTextPanel = VUHDO_getTextPanel(aHealthBar);
 	tNameText = VUHDO_getBarText(aHealthBar);
 	tLifeText = VUHDO_getLifeText(aHealthBar);
+
+	tTextPanel:SetFrameStrata("HIGH");
+	tTextPanel:SetFrameLevel(50);
+
+	tOvhPanel = VUHDO_getOverhealPanel(aHealthBar);
+	if (tOvhPanel ~= nil) then
+		tOvhPanel:SetFrameStrata("HIGH");
+		tOvhPanel:SetFrameLevel(51);
+	end
 
 	if (sIsOutline) then
 		tShadowAlpha = 0;
