@@ -1011,8 +1011,8 @@ local VUHDO_DEFAULT_PANEL_SETUP = {
 	["PANEL_COLOR"] = {
 		["TEXT"] = {
 			["TR"] = 1,
-			["TG"] = 0.82,
-			["TB"] = 0,
+			["TG"] = 1,
+			["TB"] = 1,
 			["TO"] = 1,
 			["useText"] = true
 		},
@@ -1718,7 +1718,7 @@ local VUHDO_DEFAULT_PER_PANEL_SETUP = {
 			["textSize"] = 10,
 			["textSizeLife"] = 8,
 			["maxChars"] = 0,
-			["outline"] = false
+			["outline"] = true
 		},
 
 		["HEADER"] = {

@@ -106,6 +106,26 @@ local tTR2, tTG2, tTB2, tO2;
 local tGood, tFair, tLow;
 local tDestColor = { ["useBackground"] = true, ["useOpacity"] = true };
 local tRadio;
+local tLiveText;
+local function VUHDO_applyLiveBarTextColor(aColor, aBouquetEntry)
+	if (aBouquetEntry["name"] ~= "ALWAYS" or aColor == nil) then
+		return;
+	end
+	if (not aColor["useText"] or aColor["useBackground"] or aColor["useOpacity"]) then
+		return;
+	end
+	if (VUHDO_PANEL_SETUP["PANEL_COLOR"].classColorsName) then
+		return;
+	end
+	tLiveText = VUHDO_PANEL_SETUP["PANEL_COLOR"]["TEXT"];
+	if (tLiveText == nil) then
+		return;
+	end
+	aColor["TR"] = tLiveText["TR"];
+	aColor["TG"] = tLiveText["TG"];
+	aColor["TB"] = tLiveText["TB"];
+	aColor["TO"] = tLiveText["TO"];
+end
 local function VUHDO_getBouquetStatusBarColor(anEntry, aSpecialInfo, aUnit, aValue, aMaxValue)
 	tRadio = anEntry["custom"]["radio"];
 	if (1 == tRadio) then -- solid
@@ -232,6 +252,8 @@ local function VUHDO_evaluateBouquet(aUnit, aBouquetName)
 						tColor["TR"], tColor["TG"], tColor["TB"] = tColor["TR"] * tFactor, tColor["TG"] * tFactor, tColor["TB"] * tFactor;
 					end
 				end
+
+				VUHDO_applyLiveBarTextColor(tColor, tInfos);
 
 				if (tColor["useText"]) then
 					tColor["useText"] = tInfos["color"]["useText"];

@@ -1582,13 +1582,6 @@ local function _VUHDO_buildGenericHealthBarBouquet(aType, aName)
 		tinsert(tBouquet, tItem);
 
 	else
-		if (VUHDO_PANEL_SETUP["PANEL_COLOR"].classColorsName) then
-			tItem = VUHDO_createBouquetItem("CLASS_COLOR", nil);
-			tItem["color"].useBackground = false;
-			tItem["color"].useOpacity = false;
-			tinsert(tBouquet, tItem);
-		end
-
 		-- Emergency
 		tItem = VUHDO_createBouquetItem("EMERGENCY_COLOR", VUHDO_PANEL_SETUP["BAR_COLORS"]["EMERGENCY"]);
 		tItem["custom"][1] = VUHDO_CONFIG["EMERGENCY_TRIGGER"];
@@ -1597,7 +1590,22 @@ local function _VUHDO_buildGenericHealthBarBouquet(aType, aName)
 		-- No Emergency Bar
 		tItem = VUHDO_createBouquetItem("STATUS_HEALTH", VUHDO_PANEL_SETUP["BAR_COLORS"]["NO_EMERGENCY"]);
 		tItem["custom"].radio = 1; -- solid
+		tItem["color"].useText = false;
 		tinsert(tBouquet, tItem);
+
+		-- Health Bar Texts
+		if (VUHDO_PANEL_SETUP["PANEL_COLOR"].classColorsName) then
+			tItem = VUHDO_createBouquetItem("CLASS_COLOR", nil);
+			tItem["color"].useBackground = false;
+			tItem["color"].useOpacity = false;
+			tinsert(tBouquet, tItem);
+		else
+			tTextColor = VUHDO_PANEL_SETUP["PANEL_COLOR"]["TEXT"];
+			tItem = VUHDO_createBouquetItem("ALWAYS", tTextColor);
+			tItem["color"].useBackground = false;
+			tItem["color"].useOpacity = false;
+			tinsert(tBouquet, tItem);
+		end
 	end
 
 	VUHDO_BOUQUETS["STORED"][aName] = tBouquet;
