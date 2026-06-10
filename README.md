@@ -1,10 +1,10 @@
-# Vuhdo for Sirus
+# VuhDo for Sirus
 
 Модификация VuhDo 2.23: отображение поглощений на рейд-фреймах.
 
 ## Описание
 
-Данная модицикация аддона Vuhdo 2.23 для проекта Sirus.su.  
+Данная модицикация аддона VuhDo 2.23 для проекта Sirus.su.  
 На Sirus клиент предоставляет `UnitGetTotalAbsorbs(unit)`.  
 VuhDo читает значение через `VUHDO_getAbsorbOnUnit()` и рисует оверлей поверх HP/incoming.  
 
@@ -26,6 +26,6 @@ VuhDo читает значение через `VUHDO_getAbsorbOnUnit()` и ри
 <img width="939" height="659" alt="image" src="https://github.com/user-attachments/assets/b1bd6eaa-b18d-4510-83b0-01d2499ba1ae" />  
 <img width="942" height="655" alt="image" src="https://github.com/user-attachments/assets/c21f8c66-8f93-4084-a99d-422dc16222e0" />  
 
-## Отображение эффектов поглощения в Vuhdo фреймах  
+## Отображение эффектов поглощения в VuhDo фреймах  
 <img width="218" height="213" alt="image" src="https://github.com/user-attachments/assets/938cc0ce-c552-4243-9505-96cd6d6215dd" />  
 <img width="165" height="125" alt="image" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />  
