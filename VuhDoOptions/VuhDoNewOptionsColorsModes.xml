@@ -243,11 +243,56 @@
             </Layers>
           </Frame>
 
-          <CheckButton name="$parentRangeOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+          <CheckButton name="$parentAbsorbsOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
                   <AbsDimension x="247" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS.useOpacity");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsTextCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="192" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS.useText");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsBackCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="136" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS.useBackground");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentRangeOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="247" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -262,7 +307,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="192" y="-124" />
+                  <AbsDimension x="192" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -277,7 +322,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="136" y="-124" />
+                  <AbsDimension x="136" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>

@@ -107,6 +107,10 @@ local tAbsColor = {
 	["useBackground"] = true
 };
 
+local tAbsHintColor = {
+	["useBackground"] = true
+};
+
 --
 local function VUHDO_getUnitHealthModiPercent(anInfo, aModifier)
 	if (anInfo["healthmax"] == 0) then
@@ -118,9 +122,31 @@ end
 
 --
 local tOpacity;
+local tHlO;
 local function VUHDO_setStatusBarColor(aBar, aColor)
 	if (aColor["useOpacity"]) then
 		tOpacity = aColor["O"];
+	else
+		tOpacity = nil;
+	end
+
+	if (aColor["useBackground"]) then
+		aBar:SetStatusBarColor(aColor["R"], aColor["G"], aColor["B"], tOpacity);
+	elseif (tOpacity ~= nil) then
+		aBar:SetAlpha(tOpacity);
+	end
+end
+
+--
+local function VUHDO_setStatusBarColorWithHealthAlpha(aBar, aColor, aHealthBar)
+	if (aColor["useOpacity"]) then
+		tOpacity = aColor["O"] or 1;
+		if (aHealthBar ~= nil) then
+			tHlO = select(4, aHealthBar:GetStatusBarColor());
+			if (tHlO ~= nil) then
+				tOpacity = tOpacity * tHlO;
+			end
+		end
 	else
 		tOpacity = nil;
 	end
@@ -149,6 +175,7 @@ local tHealBarLayout = {
 	["incEndPct"] = 0,
 	["amountAbs"] = 0,
 	["hasAbsorb"] = false,
+	["hasFullHealth"] = false,
 };
 
 local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
@@ -170,8 +197,11 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
 	local tHealthPlusInc = tHealth + aAmountInc;
 
 	local tVisualDenom = tMax;
-	if (tAbs > 0 and tHealthPlusAbs > tMax) then
+	if (tHealthPlusAbs > tVisualDenom) then
 		tVisualDenom = tHealthPlusAbs;
+	end
+	if (tHealthPlusInc > tVisualDenom) then
+		tVisualDenom = tHealthPlusInc;
 	end
 
 	tHealBarLayout["healthPct"] = min(100, 100 * tHealth / tVisualDenom);
@@ -179,6 +209,7 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
 	tHealBarLayout["incStartPct"] = tHealBarLayout["healthPct"];
 	tHealBarLayout["incEndPct"] = min(100, 100 * tHealthPlusInc / tVisualDenom);
 	tHealBarLayout["hasAbsorb"] = tAbs > 0 and anInfo["connected"] and not anInfo["dead"];
+	tHealBarLayout["hasFullHealth"] = tHealth >= tMax and anInfo["connected"] and not anInfo["dead"];
 
 	if (aAmountInc <= 0 or not anInfo["connected"] or anInfo["dead"]) then
 		tHealBarLayout["incEndPct"] = tHealBarLayout["incStartPct"];
@@ -221,7 +252,49 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 			});
 		end
 
-		VUHDO_setStatusBarColor(tAbsBar, tAbsColor);
+		VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, tAbsColor, VUHDO_getHealthBar(tButton, 1));
+	end
+end
+
+--
+local tAbsHintBar;
+local function _VUHDO_applyAbsorbHintBar(aLayout, tAllButtons)
+	if (aLayout == nil or tAllButtons == nil) then
+		return;
+	end
+
+	local tShow = VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and aLayout["hasAbsorb"] and aLayout["hasFullHealth"]
+		and aLayout["absorbEndPct"] <= aLayout["healthPct"];
+
+	if (not tShow) then
+		for _, tButton in pairs(tAllButtons) do
+			tAbsHintBar = VUHDO_getHealthBar(tButton, 18);
+			if (tAbsHintBar ~= nil) then
+				tAbsHintBar:SetValue(0);
+				tAbsHintBar:Hide();
+			end
+		end
+		return;
+	end
+
+	tAbsHintColor["R"] = -1;
+
+	for _, tButton in pairs(tAllButtons) do
+		tAbsHintBar = VUHDO_getHealthBar(tButton, 18);
+		if (tAbsHintBar ~= nil) then
+			tAbsHintBar:Show();
+			tAbsHintBar:SetValue(100);
+
+			if (tAbsHintColor["R"] == -1) then
+				tAbsHintColor["R"], tAbsHintColor["G"], tAbsHintColor["B"] = VUHDO_getHealthBar(tButton, 1):GetStatusBarColor();
+				tAbsHintColor = VUHDO_getDiffColor(tAbsHintColor, VUHDO_PANEL_SETUP["BAR_COLORS"]["ABSORBS"] or {
+					["R"] = 0, ["G"] = 1, ["B"] = 1, ["O"] = 0.45,
+					["useBackground"] = true, ["useOpacity"] = true,
+				});
+			end
+
+			VUHDO_setStatusBarColorWithHealthAlpha(tAbsHintBar, tAbsHintColor, VUHDO_getHealthBar(tButton, 1));
+		end
 	end
 end
 
@@ -299,10 +372,12 @@ local function _VUHDO_updateIncHeal(aUnit)
 	end
 
 	_VUHDO_applyAbsorbBar(tLayout, tAllButtons);
+	_VUHDO_applyAbsorbHintBar(tLayout, tAllButtons);
 
 	for _, tButton in pairs(tAllButtons) do
 		VUHDO_getHealthBar(tButton, 1):SetValue(tLayout["healthPct"]);
-		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+		if (VUHDO_CONFIG["SHOW_INCOMING"] or VUHDO_CONFIG["SHOW_OWN_INCOMING"]
+			or VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 			VUHDO_customizeText(tButton, 2, false);
 		end
 	end
@@ -538,6 +613,8 @@ function VUHDO_customizeBarSize(aButton)
 		VUHDO_getHealthBar(aButton, 8):SetValue(100);
 		VUHDO_getHealthBar(aButton, 6):SetValue(0);
 		VUHDO_getHealthBar(aButton, 17):SetValue(0);
+		VUHDO_getHealthBar(aButton, 18):SetValue(0);
+		VUHDO_getHealthBar(aButton, 18):Hide();
 		VUHDO_getHealthBar(aButton, 2):SetValue(0);
 	elseif (not tInfo["connected"] or tInfo["dead"]) then
 		VUHDO_getHealthBar(aButton, 1):SetValue(100);
@@ -545,9 +622,12 @@ function VUHDO_customizeBarSize(aButton)
 		VUHDO_getHealthBar(aButton, 8):SetValue(100);
 		VUHDO_getHealthBar(aButton, 6):SetValue(0);
 		VUHDO_getHealthBar(aButton, 17):SetValue(0);
+		VUHDO_getHealthBar(aButton, 18):SetValue(0);
+		VUHDO_getHealthBar(aButton, 18):Hide();
 		VUHDO_getHealthBar(aButton, 2):SetValue(0);
 	else
-		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+		if (VUHDO_CONFIG["SHOW_INCOMING"] or VUHDO_CONFIG["SHOW_OWN_INCOMING"]
+			or VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 			tLayout = VUHDO_computeHealBarLayout(tInfo, tUnit, VUHDO_getIncHealOnUnit(tInfo["name"]));
 			if (tLayout ~= nil) then
 				VUHDO_getHealthBar(aButton, 1):SetValue(tLayout["healthPct"]);
@@ -614,7 +694,7 @@ function VUHDO_healthBarBouquetCallback(aUnit, anIsActive, anIcon, aCurrValue, a
 		end
 	end
 
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and VUHDO_RAID[aUnit] ~= nil) then
+	if (VUHDO_RAID[aUnit] ~= nil) then
 		_VUHDO_updateIncHeal(aUnit);
 	end
 
@@ -696,7 +776,7 @@ function VUHDO_healthBarBouquetCallbackCustom(aUnit, anIsActive, anIcon, aCurrVa
 		end
 	end
 
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and VUHDO_RAID[aUnit] ~= nil) then
+	if (VUHDO_RAID[aUnit] ~= nil) then
 		_VUHDO_updateIncHeal(aUnit);
 	end
 end
@@ -816,7 +896,8 @@ function VUHDO_updateHealthBarsFor(aUnit, anUpdateMode)
 		VUHDO_updateIncHeal(aUnit);
 
 	elseif (9 == anUpdateMode) then -- VUHDO_UPDATE_INC
-		if (sIsOverhealText or VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+		if (sIsOverhealText or VUHDO_CONFIG["SHOW_INCOMING"] or VUHDO_CONFIG["SHOW_OWN_INCOMING"]
+			or VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 			for _, tButton in pairs(tAllButtons) do
 				VUHDO_customizeText(tButton, 2, false); -- VUHDO_UPDATE_HEALTH
 			end
@@ -835,6 +916,7 @@ function VUHDO_updateHealthBarsFor(aUnit, anUpdateMode)
 			VUHDO_customizeText(tButton, 7, false); -- f�r d/c tag -- VUHDO_UPDATE_AGGRO
 			VUHDO_customizeDebuffIconsRange(tButton);
 		end
+		VUHDO_updateIncHeal(aUnit);
 
 	elseif (3 == anUpdateMode) then -- VUHDO_UPDATE_HEALTH_MAX
 		for _, tButton in pairs(tAllButtons) do

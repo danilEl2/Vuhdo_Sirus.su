@@ -98,7 +98,10 @@ function VuhDoHealComms:HealComm_HealStarted(_, aCasterGUID, _, aHealType, anEnd
 				end
 
 				if (sIsChannelled) then
-					tAmount = tAmount + (sHealComm:GetHealAmount(tTargetGUID, VUHDO_CHANNEL_HEALS, tNow + sChannelledSecs, nil) or 0);
+					local tOk, tChannelAmount = pcall(sHealComm.GetChannelNextTickAmount, sHealComm, tTargetGUID, nil);
+					if (tOk) then
+						tAmount = tAmount + (tChannelAmount or 0);
+					end
 				end
 
 				if (sIsHots) then
