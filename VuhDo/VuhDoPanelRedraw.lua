@@ -217,42 +217,6 @@ end
 --
 local tIncBar;
 local tAbsBar;
-local tAbsHintBar;
-local tIsInverted;
-local tIsVertical;
-local tIsTurned;
-local function VUHDO_positionAbsorbHintBar(aButton)
-	tAbsHintBar = VUHDO_getHealthBar(aButton, 18);
-	if (tAbsHintBar == nil) then
-		return;
-	end
-
-	tIsInverted = VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"];
-	tIsVertical = VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["vertical"];
-	tIsTurned = VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["turnAxis"];
-
-	tAbsHintBar:ClearAllPoints();
-	if (tIsVertical) then
-		tAbsHintBar:SetWidth(sBarScaling["barWidth"]);
-		tAbsHintBar:SetHeight(3);
-		if (tIsTurned) then
-			tAbsHintBar:SetPoint("BOTTOMLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "BOTTOMLEFT", 0, 0);
-		else
-			tAbsHintBar:SetPoint("TOPLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPLEFT", 0, 0);
-		end
-	else
-		tAbsHintBar:SetWidth(3);
-		tAbsHintBar:SetHeight(sBarHeight);
-		if (tIsInverted) then
-			tAbsHintBar:SetPoint("TOPLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPLEFT", 0, 0);
-		else
-			tAbsHintBar:SetPoint("TOPRIGHT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPRIGHT", 0, 0);
-		end
-	end
-
-	tAbsHintBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 2);
-end
-
 function VUHDO_positionHealButton(aButton)
 	aButton:SetWidth(sBarScaling["barWidth"]);
 	aButton:SetHeight(sBarScaling["barHeight"]);
@@ -267,7 +231,6 @@ function VUHDO_positionHealButton(aButton)
 	tAbsBar:SetWidth(sBarScaling["barWidth"]);
 	tAbsBar:SetHeight(sBarHeight);
 	tAbsBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 1);
-	VUHDO_positionAbsorbHintBar(aButton);
 
 	-- Player Target
 	VUHDO_initPlayerTargetBorder(aButton, VUHDO_getPlayerTargetFrame(aButton));
@@ -396,22 +359,6 @@ local function VUHDO_initAbsorbBar()
 		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 1);
 	end
 	tAbsBar:SetValueRange(0, 0);
-end
-
---
-local function VUHDO_initAbsorbHintBar()
-	local tAbsHintBar = VUHDO_getHealthBar(sButton, 18);
-	local tHlBar = VUHDO_getHealthBar(sButton, 1);
-	local tAbsorbConfig = VUHDO_INDICATOR_CONFIG["CUSTOM"]["ABSORB_BAR"];
-	if (tAbsHintBar == nil) then
-		return;
-	end
-	VUHDO_setLlcStatusBarTexture(tAbsHintBar, (tAbsorbConfig and tAbsorbConfig["TEXTURE"]) or "Clean");
-	if (tHlBar ~= nil) then
-		tAbsHintBar:SetFrameLevel(tHlBar:GetFrameLevel() + 2);
-	end
-	tAbsHintBar:SetValue(0);
-	tAbsHintBar:Hide();
 end
 
 --
@@ -1050,10 +997,8 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	VUHDO_getHealthBar(aButton, 5):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 6):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 17):SetIsInverted(tIsInverted);
-	VUHDO_getHealthBar(aButton, 18):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 8):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 14):SetIsInverted(tIsInverted);
-	VUHDO_positionAbsorbHintBar(aButton);
 
 	tIsInverted = VUHDO_INDICATOR_CONFIG["CUSTOM"]["MANA_BAR"]["invertGrowth"];
 	VUHDO_getHealthBar(aButton, 2):SetIsInverted(tIsInverted);
@@ -1083,7 +1028,6 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	VUHDO_getHealthBar(aButton, 5):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 6):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 17):SetOrientation(tOrientation);
-	VUHDO_getHealthBar(aButton, 18):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 8):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 14):SetOrientation(tOrientation);
 
@@ -1115,7 +1059,6 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	VUHDO_initTotBar();
 	VUHDO_initIncomingBar();
 	VUHDO_initAbsorbBar();
-	VUHDO_initAbsorbHintBar();
 	VUHDO_initThreatBar();
 	VUHDO_initBarTexts(aButton, sHealthBar, sBarScaling["barWidth"]);
 	VUHDO_initOverhealText(sHealthBar, sBarScaling["barWidth"]);

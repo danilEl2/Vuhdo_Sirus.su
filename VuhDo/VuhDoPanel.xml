@@ -416,19 +416,6 @@
 								</Anchors>
 							</StatusBar>
 
-							<StatusBar name="$parentAbsHintBar" hidden="true" inherits="VuhDoStatusBar">
-								<Size>
-									<AbsDimension x="3" y="0" />
-								</Size>
-								<Anchors>
-									<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT">
-										<Offset>
-											<AbsDimension x="0" y="0"/>
-										</Offset>
-									</Anchor>
-								</Anchors>
-							</StatusBar>
-
 						</Frames>
 
 					</StatusBar>

@@ -445,10 +445,6 @@ local function VUHDO_fastCacheInitButton(aPanelNum, aButtonNum)
 	VUHDO_HEALTH_BAR[tButton][17] = VUHDO_GLOBAL[tButtonName .. "BgBarIcBarAbsBar"];
 	VUHDO_HEALTH_BAR[tTargetButton][17] = VuhDoDummyStatusBar;
 	VUHDO_HEALTH_BAR[tTotButton][17] = VuhDoDummyStatusBar;
-	-- Absorb hint (full HP + shield)
-	VUHDO_HEALTH_BAR[tButton][18] = VUHDO_GLOBAL[tButtonName .. "BgBarIcBarAbsHintBar"];
-	VUHDO_HEALTH_BAR[tTargetButton][18] = VuhDoDummyStatusBar;
-	VUHDO_HEALTH_BAR[tTotButton][18] = VuhDoDummyStatusBar;
 	-- Threat
 	VUHDO_HEALTH_BAR[tButton][7] = VUHDO_GLOBAL[tButtonName .. "ThBar"];
 	-- Group Highlight

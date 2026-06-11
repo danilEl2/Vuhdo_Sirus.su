@@ -492,50 +492,6 @@ function HealComm:GetHealAmount(guid, bitFlag, time, casterGUID)
 	return amount > 0 and amount or nil
 end
 
--- Sum only the next channel tick for a specific target
-local function filterChannelNextTick(spells, filterGUID)
-	local healAmount = 0
-	local currentTime = GetTime()
-
-	for _, pending in pairs(spells) do
-		if (pending.bitType == CHANNEL_HEALS and pending.tickInterval) then
-			for i = 1, #(pending), 5 do
-				if (pending[i] == filterGUID) then
-					local amount = pending[i + 1]
-					local stack = pending[i + 2] or 1
-					local endTime = pending[i + 3]
-					endTime = (endTime and endTime > 0) and endTime or pending.endTime
-					local ticksLeft = pending[i + 4] or 0
-
-					if (endTime and endTime > currentTime and ticksLeft > 0 and amount) then
-						if (not pending.hasVariableTicks) then
-							healAmount = healAmount + (amount * stack)
-						elseif (type(amount) == "table" and amount[1]) then
-							healAmount = healAmount + (amount[1] * stack)
-						end
-					end
-				end
-			end
-		end
-	end
-
-	return healAmount
-end
-
-function HealComm:GetChannelNextTickAmount(guid, casterGUID)
-	local amount = 0
-
-	if (casterGUID and pendingHeals[casterGUID]) then
-		amount = filterChannelNextTick(pendingHeals[casterGUID], guid)
-	else
-		for _, spells in pairs(pendingHeals) do
-			amount = amount + filterChannelNextTick(spells, guid)
-		end
-	end
-
-	return amount > 0 and amount or nil
-end
-
 -- Gets healing amounts for everyone except the player using the passed filters
 function HealComm:GetOthersHealAmount(guid, bitFlag, time)
 	local amount = 0

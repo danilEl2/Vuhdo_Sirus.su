@@ -175,7 +175,7 @@
 
       <Frame name="$parentNormalModePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="321" y="169" />
+          <AbsDimension x="321" y="200" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
