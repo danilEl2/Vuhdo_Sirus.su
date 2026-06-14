@@ -1,33 +1,74 @@
 # VuhDo for Sirus
-**Версия:** 2.23.1 Sirus beta
+
+[![Release](https://img.shields.io/github/v/release/danilEl2/Vuhdo_Sirus.su?include_prereleases&label=release)](https://github.com/danilEl2/Vuhdo_Sirus.su/releases)
+[![WoW Sirus](https://img.shields.io/badge/WoW-3.3.5-blue)](https://sirus.su)
+[![branch](https://img.shields.io/badge/branch-dev-informational)](#)
+
 Модификация VuhDo для Sirus.su: отображение поглощений на рейд-фреймах.
 
+## Содержание
 
-## Описание
+- [Возможности](#возможности)
+- [Требования](#требования)
+- [Установка](#установка)
+- [Настройка](#настройка)
+- [Скриншоты](#скриншоты)
+- [История изменений](#история-изменений)
+- [Лицензия и благодарности](#лицензия-и-благодарности)
 
-Данная модификация  аддона VuhDo 2.23 для проекта Sirus.su.  
-На Sirus клиент предоставляет `UnitGetTotalAbsorbs(unit)`.  
-VuhDo читает значение через `VUHDO_getAbsorbOnUnit()` и рисует оверлей поверх HP/Incoming heal.  
+## Возможности
 
-## Для кого  
-Модификация будет полезна для ДЦ жрецов для мониторинга текущего значений  эффектов поглощения от заклинаний `Слово Силы: Щит` и дополнительного поглощения от таланта `Божественное покровительство`.
+- Отображение поглощения на рейд-фреймах поверх полосы здоровья и входящего исцеления
+- Чтение значения через `UnitGetTotalAbsorbs(unit)` и `VUHDO_getAbsorbOnUnit()`
+- Отдельные цвета abs-бара при полном и неполном HP
+- Выбор текстуры заливки abs-бара для полного и неполного HP
+- Полезно ДЦ-жрецам для мониторинга эффектов `Слово Силы: Щит`, дополнительного поглощения от таланта `Божественное покровительство`, а также других эффектов поглощения
 
-## Примеры Sirus ToolTip:  
-<img width="245" height="86" alt="image" src="https://github.com/user-attachments/assets/41c514d2-e78a-49c3-b7c6-dbdf8c0128bd" />
-<img width="284" height="76" alt="image" src="https://github.com/user-attachments/assets/d192be49-c940-4456-bc85-4a83810674dc" />  
-<img width="417" height="78" alt="image" src="https://github.com/user-attachments/assets/acca4fa5-1c40-4492-986e-4fea1af14cb2" />
+## Требования
+
+- Клиент [Sirus.su](https://sirus.su) (Wrath 3.3.5)
+- Основа: **VuhDo 2.23**
+- Не устанавливайте параллельно стандартный VuhDo с Curse/Wago — используйте только эту версию
 
 ## Установка
-1. Скопировать `VuhDo` и `VuhDoOptions` в `Interface\AddOns\`
-2. `/reload`
 
-## Настройки
-- Общее -> Входящее -> «Поглощение» (по умолчанию выкл.)  
-- Цвета -> Режимы -> «Абсорбы»
-<img width="941" height="657" alt="image" src="https://github.com/user-attachments/assets/bce7ec52-b8e8-481d-b107-ed4f04158d59" />  
-<img width="942" height="655" alt="image" src="https://github.com/user-attachments/assets/c21f8c66-8f93-4084-a99d-422dc16222e0" />  
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (pre-release `ver. 2.23.1` или новее).
+2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
+3. Если установлен другой VuhDo — удалите или переименуйте его папки.
+4. Перезагрузите интерфейс: `/reload`.
 
-## Поглощение в VuhDo фреймах  
-<img width="510" height="245" alt="image" src="https://github.com/user-attachments/assets/c0332918-0306-4804-b781-e91e305918dc" />  
-<img width="218" height="213" alt="image" src="https://github.com/user-attachments/assets/938cc0ce-c552-4243-9505-96cd6d6215dd" />  
-<img width="165" height="125" alt="image" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />  
+## Настройка
+
+1. Откройте настройки VuhDo: `/vd`.
+2. Включите отображение: **Общее → Входящее → «Поглощение»** (по умолчанию выключено).
+3. Задайте текстуры abs-бара: **Общее → Входящее → «Поглощения (неполное HP)»** и **«Поглощения (полное HP)»**.
+4. Настройте цвета: **Цвета → Режимы → «Абсорбы»** — отдельно для неполного и полного HP.
+
+## Скриншоты
+
+### Подсказки Sirus
+
+<img width="245" height="86" alt="Tooltip: базовое поглощение от Слова Силы: Щит" src="https://github.com/user-attachments/assets/41c514d2-e78a-49c3-b7c6-dbdf8c0128bd" />
+<img width="284" height="76" alt="Tooltip: поглощение с талантом Божественное покровительство" src="https://github.com/user-attachments/assets/d192be49-c940-4456-bc85-4a83810674dc" />
+<img width="417" height="78" alt="Tooltip: суммарное поглощение от щита и таланта" src="https://github.com/user-attachments/assets/acca4fa5-1c40-4492-986e-4fea1af14cb2" />
+
+### Меню настроек
+
+<img width="941" height="657" alt="Настройки: включение отображения поглощения во вкладке Входящее" src="https://github.com/user-attachments/assets/bce7ec52-b8e8-481d-b107-ed4f04158d59" />
+<img width="942" height="655" alt="Настройки: цвета abs-бара во вкладке Режимы" src="https://github.com/user-attachments/assets/c21f8c66-8f93-4084-a99d-422dc16222e0" />
+
+### Рейд-фреймы
+
+<img width="510" height="245" alt="Abs-бар на групповых фреймах VuhDo" src="https://github.com/user-attachments/assets/c0332918-0306-4804-b781-e91e305918dc" />
+<img width="218" height="213" alt="Abs-бар на фрейме одного игрока" src="https://github.com/user-attachments/assets/938cc0ce-c552-4243-9505-96cd6d6215dd" />
+<img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
+
+## История изменений
+
+См. [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases).
+
+## Лицензия и благодарности
+
+Основано на [VuhDo](https://www.wowace.com/projects/vuhdo) (Iza@Gilneas).
+
+Модификация для Sirus.su — [danilEl2](https://github.com/danilEl2).
