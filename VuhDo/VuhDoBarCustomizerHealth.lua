@@ -162,7 +162,7 @@ end
 
 --
 local tAbsBarTex;
-local function VUHDO_updateAbsorbOverlay(anAbsBar, aShow)
+local function VUHDO_updateAbsorbOverlay(anAbsBar, aShow, aHealthBar)
 	local tOverlay = anAbsBar["vuhdoAbsorbOverlay"];
 
 	if (tOverlay == nil) then
@@ -182,6 +182,14 @@ local function VUHDO_updateAbsorbOverlay(anAbsBar, aShow)
 
 	tOverlay:ClearAllPoints();
 	tOverlay:SetAllPoints(tAbsBarTex);
+
+	if (aHealthBar ~= nil) then
+		tHlO = select(4, aHealthBar:GetStatusBarColor());
+		tOverlay:SetAlpha(tHlO or 1);
+	else
+		tOverlay:SetAlpha(1);
+	end
+
 	tOverlay:Show();
 end
 
@@ -291,18 +299,17 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
 	local tHealthPlusAbs = tHealth + tAbs;
 	local tHealthPlusInc = tHealth + aAmountInc;
 
-	local tVisualDenom = tMax;
-	if (tHealthPlusAbs > tVisualDenom) then
-		tVisualDenom = tHealthPlusAbs;
-	end
-	if (tHealthPlusInc > tVisualDenom) then
-		tVisualDenom = tHealthPlusInc;
+	-- Масштаб HP/абсорба: max HP или переполнение щита, но не входящее исцеление.
+	-- Иначе большой direct heal сжимает полосу здоровья и «отрывает» абсорб от её правого края.
+	local tBarDenom = tMax;
+	if (tHealthPlusAbs > tBarDenom) then
+		tBarDenom = tHealthPlusAbs;
 	end
 
-	tHealBarLayout["healthPct"] = min(100, 100 * tHealth / tVisualDenom);
-	tHealBarLayout["absorbEndPct"] = min(100, 100 * tHealthPlusAbs / tVisualDenom);
+	tHealBarLayout["healthPct"] = min(100, 100 * tHealth / tBarDenom);
+	tHealBarLayout["absorbEndPct"] = min(100, 100 * tHealthPlusAbs / tBarDenom);
 	tHealBarLayout["incStartPct"] = tHealBarLayout["healthPct"];
-	tHealBarLayout["incEndPct"] = min(100, 100 * tHealthPlusInc / tVisualDenom);
+	tHealBarLayout["incEndPct"] = min(100, 100 * tHealthPlusInc / tBarDenom);
 	tHealBarLayout["hasAbsorb"] = tAbs > 0 and anInfo["connected"] and not anInfo["dead"];
 	tHealBarLayout["isHealthFull"] = tHealth >= tMax;
 
@@ -315,6 +322,7 @@ end
 
 --
 local tAbsBar;
+local tHlBar;
 local tLayout;
 local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 	if (aLayout == nil or tAllButtons == nil) then
@@ -339,10 +347,11 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 
 	for _, tButton in pairs(tAllButtons) do
 		tAbsBar = VUHDO_getHealthBar(tButton, 17);
+		tHlBar = VUHDO_getHealthBar(tButton, 1);
 		VUHDO_applyAbsorbBarTexture(tAbsBar, aLayout["isHealthFull"]);
 		tAbsBar:SetValueRange(aLayout["healthPct"], aLayout["absorbEndPct"]);
-		VUHDO_setStatusBarColor(tAbsBar, tAbsColor);
-		VUHDO_updateAbsorbOverlay(tAbsBar, true);
+		VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, tAbsColor, tHlBar);
+		VUHDO_updateAbsorbOverlay(tAbsBar, true, tHlBar);
 	end
 end
 
