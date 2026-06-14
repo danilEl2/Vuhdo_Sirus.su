@@ -24,6 +24,7 @@ VUHDO_LibSharedMedia:Register("statusbar", "VuhDo - Minimalist", "Interface\\Add
 VUHDO_LibSharedMedia:Register("statusbar", "VuhDo - Aluminium", "Interface\\AddOns\\VuhDo\\Images\\bar18.tga");
 VUHDO_LibSharedMedia:Register("statusbar", "VuhDo - Bar Highlighter", "Interface\\AddOns\\VuhDo\\Images\\highlight.tga");
 VUHDO_LibSharedMedia:Register("statusbar", "LiteStepLite", "Interface\\AddOns\\VuhDo\\Images\\LiteStepLite.tga");
+VUHDO_LibSharedMedia:Register("statusbar", "Blizzard - Shield Fill", "Interface\\RaidFrame\\Shield-Fill");
 
 VUHDO_LibSharedMedia:Register("sound", "Tribal Bass Drum", "Sound\\Doodad\\BellTollTribal.wav");
 VUHDO_LibSharedMedia:Register("sound", "Thorns", "Sound\\Spells\\Thorns.wav	");
@@ -70,8 +71,19 @@ end
 
 --
 function VUHDO_setShieldCommEnabled()
-	local tShieldLeft = LibStub("LibShieldLeft-1.0");
-	if (VUHDO_PANEL_SETUP["BAR_COLORS"]["HOTS"]["showShieldAbsorb"]) then
+	local tShieldLeft = LibStub("LibShieldLeft-1.0", true);
+	if (tShieldLeft == nil) then
+		VUHDO_resetShieldsLeft();
+		return;
+	end
+
+	local tEnableShieldLeft = VUHDO_PANEL_SETUP["BAR_COLORS"]["HOTS"]["showShieldAbsorb"];
+
+	if (VUHDO_IS_NATIVE_ABSORBS and VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+		tEnableShieldLeft = false;
+	end
+
+	if (tEnableShieldLeft) then
 		tShieldLeft.RegisterCallback(VuhDoShieldComms, "ShieldLeft_NewShield");
 		tShieldLeft.RegisterCallback(VuhDoShieldComms, "ShieldLeft_RefreshShield");
 		tShieldLeft.RegisterCallback(VuhDoShieldComms, "ShieldLeft_RemoveShield");

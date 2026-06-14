@@ -35,6 +35,7 @@ local VUHDO_clearObsoleteInc;
 local VUHDO_updateBouquetsForEvent;
 local VUHDO_getUnitZoneName;
 local VUHDO_updateClusterHighlights;
+local VUHDO_refreshAbsorbOnUnit;
 
 local GetTime = GetTime;
 local CheckInteractDistance = CheckInteractDistance;
@@ -82,6 +83,7 @@ local function VUHDO_eventHandlerInitBurst()
 	VUHDO_updateDirectionFrame = VUHDO_GLOBAL["VUHDO_updateDirectionFrame"];
 	VUHDO_getUnitZoneName = VUHDO_GLOBAL["VUHDO_getUnitZoneName"];
 	VUHDO_updateClusterHighlights = VUHDO_GLOBAL["VUHDO_updateClusterHighlights"];
+	VUHDO_refreshAbsorbOnUnit = VUHDO_GLOBAL["VUHDO_refreshAbsorbOnUnit"];
 
 	sRangeSpell = VUHDO_CONFIG["RANGE_SPELL"] or "*foo*";
 	sIsHealerMode = not VUHDO_CONFIG["THREAT"]["IS_TANK_MODE"];
@@ -204,6 +206,10 @@ function VUHDO_OnLoad(anInstance)
 	anInstance:RegisterEvent("INSPECT_TALENT_READY");
 
 	anInstance:RegisterEvent("MODIFIER_STATE_CHANGED");
+
+	if (VUHDO_IS_NATIVE_ABSORBS) then
+		VUHDO_registerAbsorbEvents(anInstance);
+	end
 
 	SLASH_VUHDO1 = "/vuhdo";
 	SLASH_VUHDO2 = "/vd";
@@ -388,13 +394,20 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 	elseif ("UNIT_AURA" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 			VUHDO_updateHealth(anArg1, 4); -- VUHDO_UPDATE_DEBUFF
-			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and not VUHDO_HAS_ABSORB_EVENT) then
 				VUHDO_refreshAbsorbOnUnit(anArg1);
 			end
+		end
+	elseif ("UNIT_ABSORB_AMOUNT_CHANGED" == anEvent) then
+		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and (VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
+			VUHDO_refreshAbsorbOnUnit(anArg1);
 		end
 	elseif ("UNIT_HEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 			VUHDO_updateHealth(anArg1, 2); -- VUHDO_UPDATE_HEALTH
+			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+				VUHDO_refreshAbsorbOnUnit(anArg1);
+			end
 		end
 	elseif ("UNIT_MANA" == anEvent or "UNIT_ENERGY" == anEvent or "UNIT_RAGE" == anEvent or "UNIT_RUNIC_POWER" ==
 		anEvent) then
@@ -1326,7 +1339,7 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 		VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_TIMERS["UPDATE_ABSORBS"] - aTimeDelta;
 		if (VUHDO_TIMERS["UPDATE_ABSORBS"] <= 0) then
 			VUHDO_refreshAllAbsorbs();
-			VUHDO_TIMERS["UPDATE_ABSORBS"] = (VUHDO_CONFIG["ABSORB_REFRESH_MS"] or 1500) * 0.001;
+			VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_getAbsorbPollIntervalMs() * 0.001;
 		end
 	end
 

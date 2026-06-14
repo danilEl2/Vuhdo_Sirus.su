@@ -25,8 +25,19 @@ function VUHDO_absorbAdapterInitBurst()
 end
 
 --
+local VUHDO_ABSORB_FALLBACK_MS = 5000;
+
 local function VUHDO_isAbsorbsNative()
-	return type(_G["UnitGetTotalAbsorbs"]) == "function";
+	return VUHDO_IS_NATIVE_ABSORBS;
+end
+
+--
+function VUHDO_getAbsorbPollIntervalMs()
+	if (VUHDO_IS_NATIVE_ABSORBS) then
+		return VUHDO_ABSORB_FALLBACK_MS;
+	end
+
+	return VUHDO_CONFIG["ABSORB_REFRESH_MS"] or 1500;
 end
 
 --
@@ -45,7 +56,7 @@ end
 do
 	local tNativeAbsorbs = _G["UnitGetTotalAbsorbs"];
 
-	if tNativeAbsorbs == nil or not VUHDO_isAbsorbsNative() then
+	if (tNativeAbsorbs == nil or not VUHDO_isAbsorbsNative()) then
 		_G["UnitGetTotalAbsorbs"] = VUHDO_unitGetTotalAbsorbs;
 	else
 		VUHDO_unitGetTotalAbsorbs = tNativeAbsorbs;
@@ -226,5 +237,13 @@ function VUHDO_setAbsorbEnabled()
 		LibAbsorb.UnregisterCallback(VuhDoAbsorbComms, "UnitAbsorbed");
 		VUHDO_setAbsorbRefreshTimer(false);
 		VUHDO_updateAllRaidBars();
+	end
+end
+
+--
+function VUHDO_registerAbsorbEvents(anInstance)
+	if (VUHDO_IS_NATIVE_ABSORBS and anInstance ~= nil) then
+		anInstance:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED");
+		VUHDO_HAS_ABSORB_EVENT = true;
 	end
 end

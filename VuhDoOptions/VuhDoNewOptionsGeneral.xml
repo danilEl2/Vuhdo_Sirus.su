@@ -240,7 +240,7 @@
 
       <Frame name="$parentContentPanel">
         <Size>
-          <AbsDimension x="428" y="345" />
+          <AbsDimension x="428" y="460" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">

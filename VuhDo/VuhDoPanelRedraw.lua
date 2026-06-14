@@ -230,7 +230,7 @@ function VUHDO_positionHealButton(aButton)
 	tAbsBar:SetPoint("TOPLEFT", VUHDO_getHealthBar(aButton, 3):GetName(), "TOPLEFT", 0, 0);
 	tAbsBar:SetWidth(sBarScaling["barWidth"]);
 	tAbsBar:SetHeight(sBarHeight);
-	tAbsBar:SetFrameLevel(VUHDO_getHealthBar(aButton, 1):GetFrameLevel() + 1);
+	VUHDO_applyHealBarStackOrder(aButton);
 
 	-- Player Target
 	VUHDO_initPlayerTargetBorder(aButton, VUHDO_getPlayerTargetFrame(aButton));
@@ -352,18 +352,16 @@ end
 
 --
 local function VUHDO_initIncomingBar()
-	VUHDO_getHealthBar(sButton, 6):SetValueRange(0, 0);
+	VUHDO_getIncHealBar(sButton):SetValueRange(0, 0);
+	VUHDO_applyHealBarStackOrder(sButton);
 end
 
 --
 local function VUHDO_initAbsorbBar()
 	local tAbsBar = VUHDO_getHealthBar(sButton, 17);
-	local tHlBar = VUHDO_getHealthBar(sButton, 1);
-	if (tHlBar ~= nil) then
-		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 1);
-	end
 	VUHDO_initAbsorbBarVisuals(tAbsBar);
 	tAbsBar:SetValueRange(0, 0);
+	VUHDO_applyHealBarStackOrder(sButton);
 end
 
 --
@@ -991,7 +989,14 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	for tCnt = 1, 17 do
 		tHealthBar = VUHDO_getHealthBar(aButton, tCnt);
 
-		if (sStatusTexture ~= nil) then
+		if (tCnt ~= 6 and sStatusTexture ~= nil) then
+			tHealthBar:SetStatusBarTexture(sStatusTexture);
+		end
+	end
+
+	if (sStatusTexture ~= nil) then
+		tHealthBar = VUHDO_getIncHealBar(aButton);
+		if (tHealthBar ~= nil and tHealthBar ~= VuhDoDummyStatusBar) then
 			tHealthBar:SetStatusBarTexture(sStatusTexture);
 		end
 	end
@@ -1000,7 +1005,10 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	tIsInverted = VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"];
 	VUHDO_getHealthBar(aButton, 1):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 5):SetIsInverted(tIsInverted);
-	VUHDO_getHealthBar(aButton, 6):SetIsInverted(tIsInverted);
+	tHealthBar = VUHDO_getIncHealBar(aButton);
+	if (tHealthBar ~= nil and tHealthBar ~= VuhDoDummyStatusBar) then
+		tHealthBar:SetIsInverted(tIsInverted);
+	end
 	VUHDO_getHealthBar(aButton, 17):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 8):SetIsInverted(tIsInverted);
 	VUHDO_getHealthBar(aButton, 14):SetIsInverted(tIsInverted);
@@ -1031,7 +1039,10 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	end
 	VUHDO_getHealthBar(aButton, 1):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 5):SetOrientation(tOrientation);
-	VUHDO_getHealthBar(aButton, 6):SetOrientation(tOrientation);
+	tHealthBar = VUHDO_getIncHealBar(aButton);
+	if (tHealthBar ~= nil and tHealthBar ~= VuhDoDummyStatusBar) then
+		tHealthBar:SetOrientation(tOrientation);
+	end
 	VUHDO_getHealthBar(aButton, 17):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 8):SetOrientation(tOrientation);
 	VUHDO_getHealthBar(aButton, 14):SetOrientation(tOrientation);

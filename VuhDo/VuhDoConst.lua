@@ -1,5 +1,5 @@
 
-VUHDO_VERSION = "2.23";
+VUHDO_VERSION = "2.23.1 Sirus beta";
 
 VUHDO_YES = 1;
 VUHDO_NO = 2;

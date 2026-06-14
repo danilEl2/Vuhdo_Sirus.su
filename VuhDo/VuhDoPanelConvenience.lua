@@ -13,6 +13,7 @@ local VUHDO_BAR_ICON_TIMERS = {};
 local VUHDO_BAR_ICON_COUNTERS = {};
 local VUHDO_BAR_ICON_CHARGES = {};
 local VUHDO_BAR_ICON_NAMES = {};
+local VUHDO_INC_HEAL_BAR = {};
 
 VUHDO_BUTTON_CACHE = {};
 local VUHDO_BUTTON_CACHE = VUHDO_BUTTON_CACHE;
@@ -95,6 +96,50 @@ end
 --
 function VUHDO_getHealthBar(aButton, aBarNumber)
 	return VUHDO_HEALTH_BAR[aButton][aBarNumber];
+end
+
+--
+function VUHDO_getIncHealBar(aButton)
+	local tIcBar = VUHDO_getHealthBar(aButton, 6);
+	local tHlBar = VUHDO_getHealthBar(aButton, 1);
+
+	if (tIcBar == nil or tIcBar == VuhDoDummyStatusBar or tHlBar == nil) then
+		return tIcBar;
+	end
+
+	local tIncBar = VUHDO_INC_HEAL_BAR[aButton];
+
+	if (tIncBar == nil) then
+		tIncBar = CreateFrame("StatusBar", tHlBar:GetName() .. "IncHlBar", tHlBar, "VuhDoStatusBar");
+		tIncBar:SetAllPoints(tHlBar);
+		tIncBar:SetValue(0);
+		VUHDO_INC_HEAL_BAR[aButton] = tIncBar;
+	end
+
+	return tIncBar;
+end
+
+--
+function VUHDO_applyHealBarStackOrder(aButton)
+	local tHlBar = VUHDO_getHealthBar(aButton, 1);
+	local tIcBar = VUHDO_getHealthBar(aButton, 6);
+	local tAbsBar = VUHDO_getHealthBar(aButton, 17);
+
+	if (tHlBar == nil or tIcBar == nil or tAbsBar == nil
+		or tIcBar == VuhDoDummyStatusBar or tAbsBar == VuhDoDummyStatusBar) then
+		return;
+	end
+
+	local tBase = tHlBar:GetFrameLevel();
+	tHlBar:SetFrameLevel(tBase);
+
+	local tIncHealBar = VUHDO_getIncHealBar(aButton);
+	if (tIncHealBar ~= nil) then
+		tIncHealBar:SetFrameLevel(tBase + 1);
+	end
+
+	tAbsBar:SetFrameLevel(tBase + 2);
+	tIcBar:SetValueRange(0, 0);
 end
 
 --

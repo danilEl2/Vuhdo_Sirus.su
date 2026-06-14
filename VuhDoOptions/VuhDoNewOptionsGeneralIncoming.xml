@@ -325,6 +325,117 @@
         </Frames>
       </Frame>
 
+      <Frame name="$parentAbsorbTexturePanel" inherits="VuhDoPanelTemplate">
+        <Size>
+          <AbsDimension x="498" y="120" />
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="20" y="-430" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Frames>
+
+          <Frame name="$parentTitleLabel" inherits="VuhDoLabelFrameTemplate">
+            <Size>
+              <AbsDimension x="200" y="18" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-7" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+            <Layers>
+              <Layer>
+                <FontString name="$parentLabel" text="VUHDO_I18N_ABSORBS_TEXTURE" inherits="VuDoDefaultTitleFontTemplate">
+                </FontString>
+              </Layer>
+            </Layers>
+          </Frame>
+
+          <Frame name="$parentLowHpLabel" inherits="VuhDoLabelFrameTemplate">
+            <Size>
+              <AbsDimension x="220" y="16" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="3" y="-30" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+            <Layers>
+              <Layer>
+                <FontString name="$parentLabel" text="VUHDO_I18N_ABSORBS_LOW_HP" inherits="VuDoDefaultFontTemplate">
+                </FontString>
+              </Layer>
+            </Layers>
+          </Frame>
+
+          <Button name="$parentLowHpTextureCombo" inherits="VuhDoScrollComboBoxTemplate">
+            <Size>
+              <AbsDimension x="215" y="32" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-58" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_setComboModel(self, "VUHDO_CONFIG.ABSORB_TEXTURE", VUHDO_STATUS_BARS);
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_506);
+			      	</OnLoad>
+			      </Scripts>
+          </Button>
+
+          <Frame name="$parentFullHpLabel" inherits="VuhDoLabelFrameTemplate">
+            <Size>
+              <AbsDimension x="220" y="16" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="3" y="-78" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+            <Layers>
+              <Layer>
+                <FontString name="$parentLabel" text="VUHDO_I18N_ABSORBS_FULL_HP" inherits="VuDoDefaultFontTemplate">
+                </FontString>
+              </Layer>
+            </Layers>
+          </Frame>
+
+          <Button name="$parentFullHpTextureCombo" inherits="VuhDoScrollComboBoxTemplate">
+            <Size>
+              <AbsDimension x="215" y="32" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-106" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_setComboModel(self, "VUHDO_CONFIG.ABSORB_TEXTURE_FULL", VUHDO_STATUS_BARS);
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_507);
+			      	</OnLoad>
+			      </Scripts>
+          </Button>
+
+        </Frames>
+      </Frame>
+
       <Frame name="$parentTypeBombedPanel" inherits="VuhDoPanelTemplate">
         <Size>
           <AbsDimension x="244" y="95" />
