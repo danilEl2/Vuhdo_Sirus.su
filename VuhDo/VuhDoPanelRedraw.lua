@@ -326,19 +326,25 @@ local function VUHDO_initManaBar(aButton, aManaBar, aWidth, anIsForceBar)
 	if (sIsManaBouquet) then
 		aManaBar:Show();
 		aManaBar:SetHeight(tManaHeight);
-		if (VUHDO_getHealthBar(aButton, 1):GetHeight(sBarHeight) == 0) then
+		if (VUHDO_setHealthBarStackHeights ~= nil) then
+			VUHDO_setHealthBarStackHeights(aButton, sBarHeight);
+		elseif (VUHDO_getHealthBar(aButton, 1):GetHeight() == 0) then
 			VUHDO_getHealthBar(aButton, 1):SetHeight(sBarHeight);
 		end
 	else
 		aManaBar:Hide();
-		VUHDO_getHealthBar(aButton, 1):SetHeight(sBarHeight + sManaBarHeight);
+		if (VUHDO_setHealthBarStackHeights ~= nil) then
+			VUHDO_setHealthBarStackHeights(aButton, sBarHeight + sManaBarHeight);
+		else
+			VUHDO_getHealthBar(aButton, 1):SetHeight(sBarHeight + sManaBarHeight);
+		end
 	end
 end
 
 --
 local function VUHDO_initBackgroundBar(aBgBar)
 	VUHDO_setLlcStatusBarTexture(aBgBar, VUHDO_INDICATOR_CONFIG["CUSTOM"]["BACKGROUND_BAR"]["TEXTURE"]);
-	aBgBar:SetHeight(sBarScaling["barHeight"]);
+	aBgBar:SetHeight(sBarHeight);
 	aBgBar:SetValue(100);
 	aBgBar:SetStatusBarColor(0, 0, 0, 0);
 	aBgBar:Show();
@@ -353,11 +359,10 @@ end
 local function VUHDO_initAbsorbBar()
 	local tAbsBar = VUHDO_getHealthBar(sButton, 17);
 	local tHlBar = VUHDO_getHealthBar(sButton, 1);
-	local tAbsorbConfig = VUHDO_INDICATOR_CONFIG["CUSTOM"]["ABSORB_BAR"];
-	VUHDO_setLlcStatusBarTexture(tAbsBar, (tAbsorbConfig and tAbsorbConfig["TEXTURE"]) or "Clean");
 	if (tHlBar ~= nil) then
 		tAbsBar:SetFrameLevel(tHlBar:GetFrameLevel() + 1);
 	end
+	VUHDO_initAbsorbBarVisuals(tAbsBar);
 	tAbsBar:SetValueRange(0, 0);
 end
 

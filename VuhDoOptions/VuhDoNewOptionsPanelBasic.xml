@@ -153,7 +153,7 @@
 			      <Scripts>
 			      	<OnLoad>
 			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.#PNUM#.SCALING.alignBottom");
-			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_376);
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_377);
 			      	</OnLoad>
 			      	<OnClick>
 								VUHDO_lnfCheckButtonUpdateModel(self);
@@ -691,7 +691,7 @@
 			      <Scripts>
 			      	<OnLoad>
 			      		VUHDO_setComboModel(self, "VUHDO_PANEL_SETUP.#PNUM#.PANEL_COLOR.BORDER.file", VUHDO_BORDERS);
-			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_377);
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_503);
 			      	</OnLoad>
 			      </Scripts>
           </Button>

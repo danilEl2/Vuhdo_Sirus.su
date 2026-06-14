@@ -568,7 +568,7 @@ local VUHDO_DEFAULT_CONFIG = {
 	["MAX_EMERGENCIES"] = 5,
 	["SHOW_INCOMING"] = true,
 	["SHOW_ABSORBS"] = false,
-	["ABSORB_REFRESH_MS"] = 1250,
+	["ABSORB_REFRESH_MS"] = 1500,
 	["SHOW_OVERHEAL"] = true,
 	["SHOW_OWN_INCOMING"] = true,
 	["SHOW_TEXT_OVERHEAL"] = true,
@@ -1059,9 +1059,23 @@ local VUHDO_DEFAULT_PANEL_SETUP = {
 
 		["ABSORBS"] = {
 			["R"] = 0,
-			["G"] = 1,
+			["G"] = 0.92,
 			["B"] = 1,
-			["O"] = 0.45,
+			["O"] = 0.82,
+			["TR"] = 1,
+			["TG"] = 1,
+			["TB"] = 1,
+			["TO"] = 1,
+			["useText"] = false,
+			["useBackground"] = true,
+			["useOpacity"] = true
+		},
+
+		["ABSORBS_FULL"] = {
+			["R"] = 0.35,
+			["G"] = 0.72,
+			["B"] = 0.82,
+			["O"] = 0.38,
 			["TR"] = 1,
 			["TG"] = 1,
 			["TB"] = 1,

@@ -192,7 +192,7 @@
       			</Scripts>
           </EditBox>
 
-          <CheckButton name="$parentBySpellRadioButton" text="VUHOD_I18N_BY_SPELL" inherits="VuhDoRadioButtonTemplate">
+          <CheckButton name="$parentBySpellRadioButton" text="VUHDO_I18N_BY_SPELL" inherits="VuhDoRadioButtonTemplate">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>

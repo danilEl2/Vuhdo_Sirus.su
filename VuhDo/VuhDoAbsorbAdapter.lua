@@ -13,7 +13,7 @@ local VUHDO_TIMERS;
 local VUHDO_updateHealthBarsFor;
 local VUHDO_updateAllRaidBars;
 
-local VUHDO_ABSORT_CACHE = {};
+local VUHDO_ABSORB_CACHE = {};
 
 function VUHDO_absorbAdapterInitBurst()
 	VUHDO_CONFIG = VUHDO_GLOBAL["VUHDO_CONFIG"];
@@ -90,7 +90,7 @@ local function VUHDO_absorbUpdateGUIDs(...)
 	for tCnt = 1, select("#", ...) do
 		tUnit = VUHDO_RAID_GUIDS[select(tCnt, ...)];
 		if (tUnit ~= nil) then
-			VUHDO_ABSORT_CACHE[tUnit] = VUHDO_getAbsorbOnUnit(tUnit);
+			VUHDO_ABSORB_CACHE[tUnit] = VUHDO_getAbsorbOnUnit(tUnit);
 			VUHDO_updateHealthBarsFor(tUnit, 9); -- VUHDO_UPDATE_INC
 		end
 	end
@@ -98,8 +98,8 @@ end
 
 --
 function VUHDO_clearAbsorbCache()
-	for tUnit in pairs(VUHDO_ABSORT_CACHE) do
-		VUHDO_ABSORT_CACHE[tUnit] = nil;
+	for tUnit in pairs(VUHDO_ABSORB_CACHE) do
+		VUHDO_ABSORB_CACHE[tUnit] = nil;
 	end
 end
 
@@ -110,10 +110,10 @@ function VUHDO_refreshAbsorbOnUnit(aUnit)
 	end
 
 	local tAmount = VUHDO_getAbsorbOnUnit(aUnit);
-	local tCached = VUHDO_ABSORT_CACHE[aUnit] or 0;
+	local tCached = VUHDO_ABSORB_CACHE[aUnit] or 0;
 
 	if (tAmount ~= tCached) then
-		VUHDO_ABSORT_CACHE[aUnit] = tAmount;
+		VUHDO_ABSORB_CACHE[aUnit] = tAmount;
 		if (VUHDO_updateHealthBarsFor ~= nil) then
 			VUHDO_updateHealthBarsFor(aUnit, 9); -- VUHDO_UPDATE_INC
 		end
@@ -134,7 +134,7 @@ function VUHDO_refreshAllAbsorbs()
 		if (tInfo["connected"] and not tInfo["dead"]) then
 			VUHDO_refreshAbsorbOnUnit(tUnit);
 		else
-			VUHDO_ABSORT_CACHE[tUnit] = 0;
+			VUHDO_ABSORB_CACHE[tUnit] = 0;
 		end
 	end
 end

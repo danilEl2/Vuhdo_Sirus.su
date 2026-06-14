@@ -33,6 +33,18 @@ end
 
 ----------------------------------------------------
 
+--
+function VUHDO_setHealthBarStackHeights(aButton, aHeight)
+	if (aButton == nil or aHeight == nil) then
+		return;
+	end
+
+	VUHDO_getHealthBar(aButton, 1):SetHeight(aHeight);
+	VUHDO_getHealthBar(aButton, 3):SetHeight(aHeight);
+	VUHDO_getHealthBar(aButton, 6):SetHeight(aHeight);
+	VUHDO_getHealthBar(aButton, 8):SetHeight(aHeight);
+	VUHDO_getHealthBar(aButton, 17):SetHeight(aHeight);
+end
 
 --
 local tInfo;
@@ -136,11 +148,12 @@ function VUHDO_manaBarBouquetCallback(aUnit, anIsActive, anIcon, aCurrValue, aCo
 
 			if (not InCombatLockdown()) then
 				if (tManaBarHeight > 0) then
+					tManaBar:Show();
 					tManaBar:SetHeight(tManaBarHeight);
 				end
 				tRegularHeight = tButton["regularHeight"];
 				if (tRegularHeight ~= nil) then
-					VUHDO_getHealthBar(tButton, 1):SetHeight(tRegularHeight - tManaBarHeight);
+					VUHDO_setHealthBarStackHeights(tButton, tRegularHeight - tManaBarHeight);
 				end
 			end
 		end
@@ -167,10 +180,13 @@ function VUHDO_manaBarBouquetCallback(aUnit, anIsActive, anIcon, aCurrValue, aCo
 		end
 		if (not InCombatLockdown()) then
 			tManaBarHeight = VUHDO_PANEL_SETUP[VUHDO_BUTTON_CACHE[tButton]]["SCALING"]["manaBarHeight"];
-			tManaBar:SetHeight(tManaBarHeight);
+			if (tManaBarHeight > 0) then
+				tManaBar:Show();
+				tManaBar:SetHeight(tManaBarHeight);
+			end
 			tRegularHeight = tButton["regularHeight"];
 			if (tRegularHeight ~= nil) then
-				VUHDO_getHealthBar(tButton, 1):SetHeight(tRegularHeight - tManaBarHeight);
+				VUHDO_setHealthBarStackHeights(tButton, tRegularHeight - tManaBarHeight);
 			end
 		end
 	end

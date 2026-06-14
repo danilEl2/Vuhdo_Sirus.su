@@ -8,7 +8,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="20" y="-250" />
+              <AbsDimension x="20" y="-300" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -76,7 +76,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="230" y="-220" />
+              <AbsDimension x="205" y="-295" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -175,12 +175,12 @@
 
       <Frame name="$parentNormalModePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="321" y="200" />
+          <AbsDimension x="321" y="238" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="113" y="-40" />
+              <AbsDimension x="58" y="-35" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -288,11 +288,56 @@
       			</Scripts>
           </CheckButton>
 
-          <CheckButton name="$parentRangeOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+          <CheckButton name="$parentAbsorbsFullOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
                   <AbsDimension x="247" y="-162" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_FULL.useOpacity");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsFullTextCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="192" y="-162" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_FULL.useText");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsFullBackCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="136" y="-162" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_FULL.useBackground");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentRangeOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="247" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -307,7 +352,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="192" y="-162" />
+                  <AbsDimension x="192" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -322,7 +367,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="136" y="-162" />
+                  <AbsDimension x="136" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -487,8 +532,25 @@
 			      <Scripts>
 			      	<OnLoad>
 			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS");
-			      		VUHDO_lnfInitColorSwatch(self, VUHDO_I18N_ABSORBS, VUHDO_I18N_ABSORBS);
-					    	VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_376);
+			      		VUHDO_lnfInitColorSwatch(self, VUHDO_I18N_ABSORBS_LOW_HP, VUHDO_I18N_ABSORBS_LOW_HP);
+					    	VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_504);
+			      	</OnLoad>
+      			</Scripts>
+          </Frame>
+
+          <Frame name="$parentAbsorbsFullTexture" inherits="VuhDoContextColorSwatchTexture">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-162" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_FULL");
+			      		VUHDO_lnfInitColorSwatch(self, VUHDO_I18N_ABSORBS_FULL_HP, VUHDO_I18N_ABSORBS_FULL_HP);
+					    	VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_505);
 			      	</OnLoad>
       			</Scripts>
           </Frame>
@@ -497,7 +559,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-162" />
+                  <AbsDimension x="13" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
