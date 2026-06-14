@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: VuhDo - Options Sirus beta
 ## Author: Iza@Gilneas
-## Version: 2.23.1 Sirus beta
+## Version: 2.23.2 beta
 ## Notes: VuhDo Options
 ## Notes-ruRU: Настройки VuhDo
 ## SavedVariables: VUHDO_OPTIONS_SETTINGS
