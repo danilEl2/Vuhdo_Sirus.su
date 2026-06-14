@@ -299,6 +299,7 @@ local tIsDead;
 local tClassId;
 local tInfo;
 local tNewHealth;
+local tNewMax;
 local tName, tRealm;
 local tIsDcChange;
 function VUHDO_setHealth(aUnit, aMode)
@@ -410,6 +411,13 @@ function VUHDO_setHealth(aUnit, aMode)
 
 			if(2 == aMode) then -- VUHDO_UPDATE_HEALTH
 				tNewHealth = UnitHealth(aUnit);
+				tNewMax = UnitHealthMax(aUnit);
+
+				if (tNewMax > 0 and tNewMax ~= tInfo["healthmax"]) then
+					tInfo["healthmax"] = tNewMax;
+					tInfo["sortMaxHp"] = VUHDO_getUnitSortMaxHp(aUnit);
+				end
+
 				if (not tIsDead) then
 					tInfo["lifeLossPerc"] = tNewHealth / tInfo["health"];
 				end

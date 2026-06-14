@@ -241,7 +241,18 @@ local tHealBarLayout = {
 };
 
 local function VUHDO_computeHealBarLayout(anInfo, aUnit, aAmountInc)
-	if (anInfo == nil or anInfo["healthmax"] <= 0) then
+	if (anInfo == nil) then
+		return nil;
+	end
+
+	if (aUnit ~= nil and UnitExists(aUnit)) then
+		local tLiveMax = UnitHealthMax(aUnit);
+		if (tLiveMax > 0 and tLiveMax ~= anInfo["healthmax"]) then
+			anInfo["healthmax"] = tLiveMax;
+		end
+	end
+
+	if (anInfo["healthmax"] <= 0) then
 		return nil;
 	end
 
