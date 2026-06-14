@@ -32,7 +32,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (pre-release `ver. 2.23.1` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (pre-release `ver. 2.23.2` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
