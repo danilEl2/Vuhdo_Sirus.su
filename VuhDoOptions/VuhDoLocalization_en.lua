@@ -568,6 +568,7 @@ VUHDO_I18N_TT_504 = "Bright absorb color when the unit is missing health.";
 VUHDO_I18N_TT_505 = "Calm absorb color when the unit is at full health.";
 VUHDO_I18N_TT_506 = "Select the absorb bar fill texture when the unit is missing health.";
 VUHDO_I18N_TT_507 = "Select the absorb bar fill texture when the unit is at full health.";
+VUHDO_I18N_TT_508 = "Polling interval for absorb values when UNIT_ABSORB_AMOUNT_CHANGED is unavailable, or as fallback polling. Recommended 3000-5000 ms with the event, 500-1000 ms without.";
 VUHDO_I18N_TT_378 = "Select a size for panel border edges.";
 VUHDO_I18N_TT_379 = "Select an inset size for panel borders.";
 VUHDO_I18N_TT_380 = "Check this to not show yourself in regular raid/party frames.";

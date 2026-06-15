@@ -25,18 +25,12 @@ function VUHDO_absorbAdapterInitBurst()
 end
 
 --
-local VUHDO_ABSORB_FALLBACK_MS = 5000;
-
 local function VUHDO_isAbsorbsNative()
 	return VUHDO_IS_NATIVE_ABSORBS;
 end
 
 --
 function VUHDO_getAbsorbPollIntervalMs()
-	if (VUHDO_IS_NATIVE_ABSORBS) then
-		return VUHDO_ABSORB_FALLBACK_MS;
-	end
-
 	return VUHDO_CONFIG["ABSORB_REFRESH_MS"] or 1500;
 end
 

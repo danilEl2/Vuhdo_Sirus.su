@@ -327,12 +327,12 @@
 
       <Frame name="$parentAbsorbTexturePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="498" y="120" />
+          <AbsDimension x="498" y="155" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="20" y="-430" />
+              <AbsDimension x="20" y="-380" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -357,6 +357,26 @@
             </Layers>
           </Frame>
 
+          <Frame name="$parentRefreshSlider" inherits="VuhDoHSliderTemplate">
+            <Size>
+              <AbsDimension x="470" y="32" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-28" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_CONFIG.ABSORB_REFRESH_MS");
+						    VUHDO_lnfSliderOnLoad(self, VUHDO_I18N_REFRESH_RATE, 500, 5000, " " .. VUHDO_I18N_MSEC, 100);
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_508);
+			      	</OnLoad>
+      			</Scripts>
+          </Frame>
+
           <Frame name="$parentLowHpLabel" inherits="VuhDoLabelFrameTemplate">
             <Size>
               <AbsDimension x="220" y="16" />
@@ -364,7 +384,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="3" y="-30" />
+                  <AbsDimension x="153" y="-65" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -383,7 +403,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-58" />
+                  <AbsDimension x="13" y="-83" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -402,7 +422,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="3" y="-78" />
+                  <AbsDimension x="153" y="-113" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -421,7 +441,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-106" />
+                  <AbsDimension x="13" y="-131" />
                 </Offset>
               </Anchor>
             </Anchors>

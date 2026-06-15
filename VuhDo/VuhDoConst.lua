@@ -1,5 +1,5 @@
 
-VUHDO_VERSION = "2.23.2 beta";
+VUHDO_VERSION = "2.23.3 beta";
 
 VUHDO_YES = 1;
 VUHDO_NO = 2;

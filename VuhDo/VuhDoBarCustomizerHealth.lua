@@ -13,6 +13,7 @@ local VUHDO_getDiffColor;
 local VUHDO_isPanelVisible;
 local VUHDO_updateManaBars;
 local VUHDO_updateAllHoTs;
+local VUHDO_refreshHotBarsRange;
 local VUHDO_removeAllHots;
 local VUHDO_getUnitHealthPercent;
 local VUHDO_getPanelButtons;
@@ -77,6 +78,7 @@ function VUHDO_customHealthInitBurst()
 	VUHDO_updateManaBars = VUHDO_GLOBAL["VUHDO_updateManaBars"];
 	VUHDO_removeAllHots = VUHDO_GLOBAL["VUHDO_removeAllHots"];
 	VUHDO_updateAllHoTs = VUHDO_GLOBAL["VUHDO_updateAllHoTs"];
+	VUHDO_refreshHotBarsRange = VUHDO_GLOBAL["VUHDO_refreshHotBarsRange"];
 	VUHDO_getUnitHealthPercent = VUHDO_GLOBAL["VUHDO_getUnitHealthPercent"];
 	VUHDO_getPanelButtons = VUHDO_GLOBAL["VUHDO_getPanelButtons"];
 	VUHDO_updateBouquetsForEvent = VUHDO_GLOBAL["VUHDO_updateBouquetsForEvent"];
@@ -967,6 +969,7 @@ function VUHDO_updateHealthBarsFor(aUnit, anUpdateMode)
 			VUHDO_customizeDebuffIconsRange(tButton);
 		end
 		VUHDO_updateIncHeal(aUnit);
+		VUHDO_refreshHotBarsRange(aUnit);
 
 	elseif (3 == anUpdateMode) then -- VUHDO_UPDATE_HEALTH_MAX
 		for _, tButton in pairs(tAllButtons) do

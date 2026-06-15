@@ -165,11 +165,31 @@ end
 
 --
 local tHotBar;
+local tHlBar;
+local tHotColor;
+local tOpacity;
+local tHlO;
+local function VUHDO_applyHotBarColor(aButton, anIndex, aColor)
+	tHotBar = VUHDO_getHealthBar(aButton, anIndex + 3);
+	tHotColor = aColor or sBarColors["HOT" .. anIndex];
+	if (tHotColor == nil) then
+		return;
+	end
+
+	tOpacity = tHotColor["O"] or 1;
+	tHlBar = VUHDO_getHealthBar(aButton, 1);
+	tHlO = select(4, tHlBar:GetStatusBarColor());
+	if (tHlO ~= nil) then
+		tOpacity = tOpacity * tHlO;
+	end
+
+	tHotBar:SetStatusBarColor(tHotColor["R"], tHotColor["G"], tHotColor["B"], tOpacity);
+end
+
+--
 local function VUHDO_customizeHotBar(aButton, aRest, anIndex, aDuration, aColor)
 	tHotBar = VUHDO_getHealthBar(aButton, anIndex + 3);
-	if (aColor ~= nil) then
-		tHotBar:SetStatusBarColor(aColor["R"], aColor["G"], aColor["B"], aColor["O"]);
-	end
+	VUHDO_applyHotBarColor(aButton, anIndex, aColor);
 	if (aDuration == nil or aRest == nil) then
 		tHotBar:SetValue(0);
 	elseif (aDuration == 0) then
@@ -549,7 +569,7 @@ local function VUHDO_updateHots(aUnit, anInfo)
 	end
 
 	for tIndex, tHotInfo in pairs(VUHDO_MY_HOTS[aUnit]) do
-		tHotInfo[1] = nil; -- Rest == nil => Icon löschen
+		tHotInfo[1] = nil; -- Rest == nil => Icon l?schen
 	end
 
 	for tIndex, tHotInfo in pairs(VUHDO_OTHER_HOTS[aUnit]) do
@@ -690,6 +710,26 @@ function VUHDO_swiftmendIndicatorBouquetCallback(aUnit, anIsActive, anIcon, aTim
 				tIcon:Show();
 			else
 				VUHDO_getBarRoleIcon(tButton, 51):Hide();
+			end
+		end
+	end
+end
+
+
+
+--
+local tAllButtons;
+function VUHDO_refreshHotBarsRange(aUnit)
+	tAllButtons = VUHDO_getUnitButtons(VUHDO_resolveVehicleUnit(aUnit));
+	if (tAllButtons == nil) then
+		return;
+	end
+
+	for _, tButton in pairs(tAllButtons) do
+		for tIndex = 6, 8 do
+			tHotBar = VUHDO_getHealthBar(tButton, tIndex + 3);
+			if (tHotBar:GetValue() > 0) then
+				VUHDO_applyHotBarColor(tButton, tIndex, nil);
 			end
 		end
 	end

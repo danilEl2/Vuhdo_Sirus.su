@@ -796,18 +796,26 @@ VUHDO_DEFAULT_POWER_TYPE_COLORS = {
 --
 function VUHDO_loadDefaultConfig()
 	local tClass;
+	local tShowAbsorbsUnset;
 	_, tClass = UnitClass("player");
 
 	if (VUHDO_CONFIG == nil) then
+		tShowAbsorbsUnset = true;
 		VUHDO_CONFIG = VUHDO_deepCopyTable(VUHDO_DEFAULT_CONFIG);
 
 		if (VUHDO_DEFAULT_RANGE_SPELLS[tClass] ~= nil) then
 			VUHDO_CONFIG["RANGE_SPELL"] = VUHDO_DEFAULT_RANGE_SPELLS[tClass];
 			VUHDO_CONFIG["RANGE_PESSIMISTIC"] = false;
 		end
+	else
+		tShowAbsorbsUnset = (VUHDO_CONFIG["SHOW_ABSORBS"] == nil);
 	end
 
 	VUHDO_CONFIG = VUHDO_ensureSanity("VUHDO_CONFIG", VUHDO_CONFIG, VUHDO_DEFAULT_CONFIG);
+
+	if (type(UnitGetTotalAbsorbs) == "function" and tShowAbsorbsUnset) then
+		VUHDO_CONFIG["SHOW_ABSORBS"] = true;
+	end
 
 	if (VUHDO_CONFIG["CUSTOM_DEBUFF"].version == nil or VUHDO_CONFIG["CUSTOM_DEBUFF"].version < 2) then
 		VUHDO_CONFIG["CUSTOM_DEBUFF"].version = 2;
