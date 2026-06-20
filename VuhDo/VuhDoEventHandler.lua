@@ -51,6 +51,8 @@ local HasFullControl = HasFullControl;
 local pairs = pairs;
 local UnitThreatSituation = UnitThreatSituation;
 local InCombatLockdown = InCombatLockdown;
+local GetNumRaidMembers = GetNumRaidMembers;
+local GetNumPartyMembers = GetNumPartyMembers;
 local sRangeSpell, sIsRangeKnown, sIsHealerMode;
 local sIsDirectionArrow = false;
 
@@ -107,6 +109,7 @@ VUHDO_TIMERS = {
 	["RELOAD_PANEL"] = 0,
 	["CUSTOMIZE"] = 0,
 	["CHECK_PROFILES"] = 6.2,
+	["CHECK_GROUP_SIZE"] = 10,
 	["RELOAD_ZONES"] = 2.4,
 	["UPDATE_CLUSTERS"] = 0,
 	["REFRESH_INSPECT"] = 2.1,
@@ -1046,6 +1049,8 @@ end
 local tNow;
 local tTimeDelta = 0;
 local tAutoProfile;
+local tCurRaidMembers, tCurPartyMembers;
+local tLastRaidMembers, tLastPartyMembers;
 local tUnit, tInfo;
 local tGcdStart, tGcdDuration;
 local tHotDebuffToggle = 1;
@@ -1267,6 +1272,28 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 			end
 
 			VUHDO_TIMERS["CHECK_PROFILES"] = 3.1;
+		end
+	end
+
+	-- fallback roster consistency check
+	if (VUHDO_TIMERS["CHECK_GROUP_SIZE"] > 0) then
+		VUHDO_TIMERS["CHECK_GROUP_SIZE"] = VUHDO_TIMERS["CHECK_GROUP_SIZE"] - aTimeDelta;
+		if (VUHDO_TIMERS["CHECK_GROUP_SIZE"] <= 0) then
+			tCurRaidMembers = GetNumRaidMembers();
+			tCurPartyMembers = GetNumPartyMembers();
+
+			if (tLastRaidMembers ~= nil and tLastPartyMembers ~= nil
+					and (tCurRaidMembers ~= tLastRaidMembers or tCurPartyMembers ~= tLastPartyMembers)
+					and VUHDO_FIRST_RELOAD_UI) then
+				VUHDO_quickRaidReload();
+				if (VUHDO_TIMERS["RELOAD_ROSTER"] < 0.2) then
+					VUHDO_TIMERS["RELOAD_ROSTER"] = 0.3;
+				end
+			end
+
+			tLastRaidMembers = tCurRaidMembers;
+			tLastPartyMembers = tCurPartyMembers;
+			VUHDO_TIMERS["CHECK_GROUP_SIZE"] = 10;
 		end
 	end
 

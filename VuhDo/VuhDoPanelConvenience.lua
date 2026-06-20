@@ -14,6 +14,7 @@ local VUHDO_BAR_ICON_COUNTERS = {};
 local VUHDO_BAR_ICON_CHARGES = {};
 local VUHDO_BAR_ICON_NAMES = {};
 local VUHDO_INC_HEAL_BAR = {};
+local VUHDO_OTHER_INC_HEAL_BAR = {};
 
 VUHDO_BUTTON_CACHE = {};
 local VUHDO_BUTTON_CACHE = VUHDO_BUTTON_CACHE;
@@ -120,6 +121,27 @@ function VUHDO_getIncHealBar(aButton)
 end
 
 --
+function VUHDO_getOtherIncHealBar(aButton)
+	local tIcBar = VUHDO_getHealthBar(aButton, 6);
+	local tHlBar = VUHDO_getHealthBar(aButton, 1);
+
+	if (tIcBar == nil or tIcBar == VuhDoDummyStatusBar or tHlBar == nil) then
+		return tIcBar;
+	end
+
+	local tOtherIncBar = VUHDO_OTHER_INC_HEAL_BAR[aButton];
+
+	if (tOtherIncBar == nil) then
+		tOtherIncBar = CreateFrame("StatusBar", tHlBar:GetName() .. "OthIncHlBar", tHlBar, "VuhDoStatusBar");
+		tOtherIncBar:SetAllPoints(tHlBar);
+		tOtherIncBar:SetValue(0);
+		VUHDO_OTHER_INC_HEAL_BAR[aButton] = tOtherIncBar;
+	end
+
+	return tOtherIncBar;
+end
+
+--
 function VUHDO_applyHealBarStackOrder(aButton)
 	local tHlBar = VUHDO_getHealthBar(aButton, 1);
 	local tIcBar = VUHDO_getHealthBar(aButton, 6);
@@ -133,12 +155,17 @@ function VUHDO_applyHealBarStackOrder(aButton)
 	local tBase = tHlBar:GetFrameLevel();
 	tHlBar:SetFrameLevel(tBase);
 
-	local tIncHealBar = VUHDO_getIncHealBar(aButton);
-	if (tIncHealBar ~= nil) then
-		tIncHealBar:SetFrameLevel(tBase + 1);
+	local tOtherIncBar = VUHDO_getOtherIncHealBar(aButton);
+	if (tOtherIncBar ~= nil) then
+		tOtherIncBar:SetFrameLevel(tBase + 1);
 	end
 
-	tAbsBar:SetFrameLevel(tBase + 2);
+	local tIncHealBar = VUHDO_getIncHealBar(aButton);
+	if (tIncHealBar ~= nil) then
+		tIncHealBar:SetFrameLevel(tBase + 2);
+	end
+
+	tAbsBar:SetFrameLevel(tBase + 3);
 	tIcBar:SetValueRange(0, 0);
 end
 
@@ -165,6 +192,101 @@ end
 --
 function VUHDO_getClusterBorderFrame(aButton)
 	return VUHDO_GLOBAL[VUHDO_HEALTH_BAR[aButton][1]:GetName() .. "Clu"];
+end
+
+--
+local VUHDO_HLBAR_BORDER_ORIG_EDGE = { };
+local VUHDO_HLBAR_BORDER_LAST_COLOR = { };
+local VUHDO_HLBAR_BORDER_SUPPRESSED = { };
+
+--
+local function VUHDO_copyBackdrop(aBackdrop)
+	local tCopy = { };
+
+	for tKey, tVal in pairs(aBackdrop) do
+		tCopy[tKey] = tVal;
+	end
+
+	return tCopy;
+end
+
+--
+function VUHDO_shouldSuppressHlBarBorderForUnit(aUnit)
+	local tInfo = VUHDO_RAID[aUnit];
+
+	if (tInfo == nil or not tInfo["connected"] or tInfo["dead"]) then
+		return false;
+	end
+
+	return (VUHDO_getIncHealOnUnit(tInfo["name"]) or 0) > 0;
+end
+
+--
+function VUHDO_applyHlBarBorderVisual(aBorderFrame, aColor, aUnit)
+	if (aBorderFrame == nil) then
+		return;
+	end
+
+	if (aColor ~= nil) then
+		VUHDO_HLBAR_BORDER_LAST_COLOR[aBorderFrame] = aColor;
+	end
+
+	local tColor = aColor or VUHDO_HLBAR_BORDER_LAST_COLOR[aBorderFrame];
+	local tBackdrop = aBorderFrame:GetBackdrop();
+
+	if (tBackdrop == nil) then
+		return;
+	end
+
+	if (aUnit ~= nil and VUHDO_shouldSuppressHlBarBorderForUnit(aUnit)) then
+		if (VUHDO_HLBAR_BORDER_ORIG_EDGE[aBorderFrame] == nil) then
+			VUHDO_HLBAR_BORDER_ORIG_EDGE[aBorderFrame] = tBackdrop["edgeSize"];
+		end
+
+		if (tBackdrop["edgeSize"] ~= 0) then
+			tBackdrop = VUHDO_copyBackdrop(tBackdrop);
+			tBackdrop["edgeSize"] = 0;
+			aBorderFrame:SetBackdrop(tBackdrop);
+		end
+
+		aBorderFrame:SetBackdropBorderColor(0, 0, 0, 0);
+		VUHDO_HLBAR_BORDER_SUPPRESSED[aBorderFrame] = true;
+		aBorderFrame:Hide();
+		return;
+	end
+
+	local tOrigEdge = VUHDO_HLBAR_BORDER_ORIG_EDGE[aBorderFrame];
+
+	if (tOrigEdge ~= nil) then
+		tBackdrop = VUHDO_copyBackdrop(aBorderFrame:GetBackdrop());
+		tBackdrop["edgeSize"] = tOrigEdge;
+		aBorderFrame:SetBackdrop(tBackdrop);
+		VUHDO_HLBAR_BORDER_ORIG_EDGE[aBorderFrame] = nil;
+	end
+
+	if (tColor ~= nil) then
+		aBorderFrame:SetBackdropBorderColor(tColor["R"], tColor["G"], tColor["B"], tColor["O"]);
+
+		if (VUHDO_HLBAR_BORDER_SUPPRESSED[aBorderFrame]) then
+			VUHDO_HLBAR_BORDER_SUPPRESSED[aBorderFrame] = nil;
+			aBorderFrame:Show();
+		end
+	end
+end
+
+--
+function VUHDO_refreshHlBarBorderForButton(aButton, aUnit)
+	local tPlTg = VUHDO_getPlayerTargetFrame(aButton);
+
+	if (tPlTg ~= nil) then
+		VUHDO_applyHlBarBorderVisual(tPlTg, nil, aUnit);
+	end
+
+	local tClu = VUHDO_getClusterBorderFrame(aButton);
+
+	if (tClu ~= nil) then
+		VUHDO_applyHlBarBorderVisual(tClu, nil, aUnit);
+	end
 end
 
 --
@@ -305,6 +427,7 @@ local VUHDO_STATUSBAR_LEFT_TO_RIGHT = 1;
 local VUHDO_STATUSBAR_RIGHT_TO_LEFT = 2;
 local VUHDO_STATUSBAR_BOTTOM_TO_TOP = 3;
 local VUHDO_STATUSBAR_TOP_TO_BOTTOM = 4;
+local VUHDO_STATUSBAR_TEX_EPS = 0.002;
 function VUHDO_repairStatusbar(tBar)
 	tBar["texture"] = tBar:CreateTexture(nil, "ARTWORK");
 	tBar["txOrient"] = VUHDO_STATUSBAR_LEFT_TO_RIGHT;
@@ -334,25 +457,96 @@ function VUHDO_repairStatusbar(tBar)
 		end
 
 		self["value"] = aValue;
+
+		if (aValue <= 0) then
+			self["texture"]:Hide();
+			return;
+		end
+
+		local tIsPartial = aValue < 100;
 		aValue = aValue * 0.01;
 		if (self["isInverted"]) then
 			aValue = 1 - aValue;
 		end
 
 		if (1 == self["txOrient"]) then -- VUHDO_STATUSBAR_LEFT_TO_RIGHT
-			self["texture"]:SetTexCoord(0, aValue, 0, 1);
+			tTexMin = 0;
+			tTexMax = aValue;
+			if (self["isInverted"]) then
+				tTexMin = 1 - aValue;
+				tTexMax = 1;
+				if (tIsPartial) then
+					tTexMin = tTexMin + VUHDO_STATUSBAR_TEX_EPS;
+				end
+			elseif (tIsPartial) then
+				tTexMax = aValue - VUHDO_STATUSBAR_TEX_EPS;
+			end
+			if (tTexMax <= tTexMin) then
+				self["texture"]:Hide();
+				return;
+			end
+			self["texture"]:Show();
+			self["texture"]:SetTexCoord(tTexMin, tTexMax, 0, 1);
 			self["texture"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", (aValue - 1) * self:GetWidth(), 0);
 
 		elseif (2 == self["txOrient"]) then -- VUHDO_STATUSBAR_RIGHT_TO_LEFT
-			self["texture"]:SetTexCoord(1 - aValue, 1, 0, 1);
+			tTexMin = 1 - aValue;
+			tTexMax = 1;
+			if (self["isInverted"]) then
+				tTexMin = 0;
+				tTexMax = aValue;
+				if (tIsPartial) then
+					tTexMax = aValue - VUHDO_STATUSBAR_TEX_EPS;
+				end
+			elseif (tIsPartial) then
+				tTexMin = tTexMin + VUHDO_STATUSBAR_TEX_EPS;
+			end
+			if (tTexMax <= tTexMin) then
+				self["texture"]:Hide();
+				return;
+			end
+			self["texture"]:Show();
+			self["texture"]:SetTexCoord(tTexMin, tTexMax, 0, 1);
 			self["texture"]:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", (1 - aValue) * self:GetWidth(), 0);
 
 		elseif (3 == self["txOrient"]) then -- VUHDO_STATUSBAR_BOTTOM_TO_TOP
-			self["texture"]:SetTexCoord(0, 1, 1 - aValue, 1);
+			tTexMin = 1 - aValue;
+			tTexMax = 1;
+			if (self["isInverted"]) then
+				tTexMin = 0;
+				tTexMax = aValue;
+				if (tIsPartial) then
+					tTexMax = aValue - VUHDO_STATUSBAR_TEX_EPS;
+				end
+			elseif (tIsPartial) then
+				tTexMin = tTexMin + VUHDO_STATUSBAR_TEX_EPS;
+			end
+			if (tTexMax <= tTexMin) then
+				self["texture"]:Hide();
+				return;
+			end
+			self["texture"]:Show();
+			self["texture"]:SetTexCoord(0, 1, tTexMin, tTexMax);
 			self["texture"]:SetPoint("TOPLEFT", self, "TOPLEFT", 0, (aValue - 1) * self:GetHeight());
 
 		else -- if (VUHDO_STATUSBAR_TOP_TO_BOTTOM == self["txOrient"]) then
-			self["texture"]:SetTexCoord(0, 1, 0, aValue);
+			tTexMin = 0;
+			tTexMax = aValue;
+			if (self["isInverted"]) then
+				tTexMin = 1 - aValue;
+				tTexMax = 1;
+				if (tIsPartial) then
+					tTexMin = tTexMin + VUHDO_STATUSBAR_TEX_EPS;
+				end
+			elseif (tIsPartial) then
+				tTexMax = aValue - VUHDO_STATUSBAR_TEX_EPS;
+			end
+			if (tTexMax <= tTexMin) then
+				self["texture"]:Hide();
+				return;
+			end
+			self["texture"]:Show();
+			self["texture"]:SetTexCoord(0, 1, tTexMin, tTexMax);
 			self["texture"]:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, (1 - aValue) * self:GetHeight());
 		end
 	end
@@ -373,7 +567,19 @@ function VUHDO_repairStatusbar(tBar)
 
 		tValue = aMaxValue - aMinValue;
 		self["value"] = tValue;
+
+		if (tValue <= 0) then
+			self["texture"]:Hide();
+			return;
+		end
+
+		self["texture"]:Show();
 		tValue = tValue * 0.01;
+
+		if (tValue <= VUHDO_STATUSBAR_TEX_EPS * 2) then
+			self["texture"]:Hide();
+			return;
+		end
 
 		aMinValue = aMinValue * 0.01;
 		aMaxValue = aMaxValue * 0.01;
@@ -384,25 +590,25 @@ function VUHDO_repairStatusbar(tBar)
 
 		if (1 == self["txOrient"]) then -- VUHDO_STATUSBAR_LEFT_TO_RIGHT
 			tWidth = self:GetWidth();
-			self["texture"]:SetTexCoord(0, tValue, 0, 1);
+			self["texture"]:SetTexCoord(VUHDO_STATUSBAR_TEX_EPS, tValue - VUHDO_STATUSBAR_TEX_EPS, 0, 1);
 			self["texture"]:SetPoint("TOPLEFT", self, "TOPLEFT", aMinValue * tWidth, 0);
 			self["texture"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", (aMaxValue - 1) * tWidth, 0);
 
 		elseif (2 == self["txOrient"]) then -- VUHDO_STATUSBAR_RIGHT_TO_LEFT
 			tWidth = self:GetWidth();
-			self["texture"]:SetTexCoord(1 - tValue, 1, 0, 1);
+			self["texture"]:SetTexCoord(1 - tValue + VUHDO_STATUSBAR_TEX_EPS, 1 - VUHDO_STATUSBAR_TEX_EPS, 0, 1);
 			self["texture"]:SetPoint("TOPRIGHT", self, "TOPRIGHT", -aMinValue * tWidth, 0);
 			self["texture"]:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", (1 - aMaxValue) * tWidth, 0);
 
 		elseif (3 == self["txOrient"]) then -- VUHDO_STATUSBAR_BOTTOM_TO_TOP
 			tHeight = self:GetHeight();
-			self["texture"]:SetTexCoord(0, 1, 1 - tValue, 1);
+			self["texture"]:SetTexCoord(0, 1, 1 - tValue + VUHDO_STATUSBAR_TEX_EPS, 1 - VUHDO_STATUSBAR_TEX_EPS);
 			self["texture"]:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, aMinValue * tHeight);
 			self["texture"]:SetPoint("TOPLEFT", self, "TOPLEFT", 0, (aMaxValue - 1) * tHeight);
 
 		else -- if (VUHDO_STATUSBAR_TOP_TO_BOTTOM == self["txOrient"]) then
 			tHeight = self:GetHeight();
-			self["texture"]:SetTexCoord(0, 1, 0, tValue);
+			self["texture"]:SetTexCoord(0, 1, VUHDO_STATUSBAR_TEX_EPS, tValue - VUHDO_STATUSBAR_TEX_EPS);
 			self["texture"]:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, -aMinValue * tHeight);
 			self["texture"]:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, (1 - aMaxValue) * tHeight);
 		end
@@ -414,6 +620,10 @@ function VUHDO_repairStatusbar(tBar)
 
 	tBar["SetStatusBarTexture"] = function(self, aTexture)
 		self["texture"]:SetTexture(aTexture);
+	end
+
+	tBar["GetStatusBarTexture"] = function(self)
+		return self["texture"];
 	end
 
 	tBar["SetMinMaxValues"] = function(self, aMinValue, aMaxValue)

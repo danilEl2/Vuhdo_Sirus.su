@@ -50,8 +50,10 @@ function VUHDO_barBorderBouquetCallback(aUnit, anIsActive, anIcon, aTimer, aCoun
 			tBorder = VUHDO_getPlayerTargetFrame(tButton);
 			if (aColor ~= nil) then
 				tBorder:SetFrameLevel(tButton:GetFrameLevel() + (anImpact or 0));
-				tBorder:SetBackdropBorderColor(aColor.R, aColor.G, aColor.B, aColor.O);
-				tBorder:Show();
+				VUHDO_applyHlBarBorderVisual(tBorder, aColor, aUnit);
+				if (not VUHDO_shouldSuppressHlBarBorderForUnit(aUnit)) then
+					tBorder:Show();
+				end
 			else
 				tBorder:Hide();
 			end

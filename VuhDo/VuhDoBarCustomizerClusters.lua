@@ -217,8 +217,10 @@ function VUHDO_clusterBorderBouquetCallback(aUnit, anIsActive, anIcon, aTimer, a
 		for _, tButton in pairs(tAllButtons) do
 			tBorder = VUHDO_getClusterBorderFrame(tButton);
 			if (aColor ~= nil) then
-				tBorder:SetBackdropBorderColor(aColor["R"], aColor["G"], aColor["B"], aColor["O"]);
-				tBorder:Show();
+				VUHDO_applyHlBarBorderVisual(tBorder, aColor, aUnit);
+				if (not VUHDO_shouldSuppressHlBarBorderForUnit(aUnit)) then
+					tBorder:Show();
+				end
 			else
 				tBorder:Hide();
 			end

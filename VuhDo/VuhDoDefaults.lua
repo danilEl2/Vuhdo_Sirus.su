@@ -571,6 +571,8 @@ local VUHDO_DEFAULT_CONFIG = {
 	["ABSORB_TEXTURE"] = "Blizzard - Shield Fill",
 	["ABSORB_TEXTURE_FULL"] = "Blizzard - Shield Fill",
 	["ABSORB_REFRESH_MS"] = 1500,
+	["ABSORB_OVER_GLOW"] = false,
+	["ABSORB_SHOW_MY_INC"] = false,
 	["SHOW_OVERHEAL"] = true,
 	["SHOW_OWN_INCOMING"] = true,
 	["SHOW_TEXT_OVERHEAL"] = true,
@@ -1067,6 +1069,20 @@ local VUHDO_DEFAULT_PANEL_SETUP = {
 			["useOpacity"] = true
 		},
 
+		["INCOMING_OTHERS"] = {
+			["R"] = 0,
+			["G"] = 0.45,
+			["B"] = 0,
+			["O"] = 0.33,
+			["TR"] = 1,
+			["TG"] = 0.82,
+			["TB"] = 0,
+			["TO"] = 1,
+			["useText"] = false,
+			["useBackground"] = false,
+			["useOpacity"] = true
+		},
+
 		["ABSORBS"] = {
 			["R"] = 0,
 			["G"] = 0.92,
@@ -1086,6 +1102,20 @@ local VUHDO_DEFAULT_PANEL_SETUP = {
 			["G"] = 0.72,
 			["B"] = 0.82,
 			["O"] = 0.38,
+			["TR"] = 1,
+			["TG"] = 1,
+			["TB"] = 1,
+			["TO"] = 1,
+			["useText"] = false,
+			["useBackground"] = true,
+			["useOpacity"] = true
+		},
+
+		["ABSORBS_OVER"] = {
+			["R"] = 0.2,
+			["G"] = 1,
+			["B"] = 1,
+			["O"] = 0.95,
 			["TR"] = 1,
 			["TG"] = 1,
 			["TB"] = 1,

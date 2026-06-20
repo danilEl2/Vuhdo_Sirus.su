@@ -3,7 +3,7 @@
     <Frames>
       <Frame name="$parentIncomingPanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="244" y="150" />
+          <AbsDimension x="344" y="150" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
@@ -90,6 +90,41 @@
 			      	<OnLoad>
 			      		VUHDO_lnfSetModel(self, "VUHDO_CONFIG.SHOW_ABSORBS");
 			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_376);
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentOverAbsorbGlowCheckButton" text="VUHDO_I18N_ABSORB_OVER_GLOW" inherits="VuhDoCheckButtonTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="133" y="-107" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_CONFIG.ABSORB_OVER_GLOW");
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_510);
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentSplitIncomingCheckButton" text="VUHDO_I18N_SPLIT_INCOMING" inherits="VuhDoCheckButtonTemplate">
+            <Size>
+              <AbsDimension x="100" y="32" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="245" y="-31" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_CONFIG.ABSORB_SHOW_MY_INC");
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_511);
 			      	</OnLoad>
       			</Scripts>
           </CheckButton>

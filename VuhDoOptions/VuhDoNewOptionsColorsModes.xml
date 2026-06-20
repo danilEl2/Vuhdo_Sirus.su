@@ -8,7 +8,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="20" y="-300" />
+              <AbsDimension x="20" y="-363" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -76,7 +76,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="205" y="-295" />
+              <AbsDimension x="205" y="-358" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -175,7 +175,7 @@
 
       <Frame name="$parentNormalModePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="321" y="238" />
+          <AbsDimension x="321" y="314" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
@@ -247,7 +247,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="247" y="-124" />
+                  <AbsDimension x="247" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -262,7 +262,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="192" y="-124" />
+                  <AbsDimension x="192" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -277,7 +277,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="136" y="-124" />
+                  <AbsDimension x="136" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -292,7 +292,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="247" y="-162" />
+                  <AbsDimension x="247" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -307,7 +307,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="192" y="-162" />
+                  <AbsDimension x="192" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -322,7 +322,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="136" y="-162" />
+                  <AbsDimension x="136" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -333,11 +333,56 @@
       			</Scripts>
           </CheckButton>
 
+          <CheckButton name="$parentAbsorbsOverOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="247" y="-238" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_OVER.useOpacity");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsOverTextCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="192" y="-238" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_OVER.useText");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentAbsorbsOverBackCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="136" y="-238" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_OVER.useBackground");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
           <CheckButton name="$parentRangeOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="247" y="-200" />
+                  <AbsDimension x="247" y="-276" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -352,7 +397,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="192" y="-200" />
+                  <AbsDimension x="192" y="-276" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -367,13 +412,58 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="136" y="-200" />
+                  <AbsDimension x="136" y="-276" />
                 </Offset>
               </Anchor>
             </Anchors>
 			      <Scripts>
 			      	<OnLoad>
 			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.OUTRANGED.useBackground");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentIncomingOthersOpacCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="247" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.INCOMING_OTHERS.useOpacity");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentIncomingOthersTextCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="192" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.INCOMING_OTHERS.useText");
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentIncomingOthersBackCheckBox" inherits="VuhDoCheckBoxTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="136" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.INCOMING_OTHERS.useBackground");
 			      	</OnLoad>
       			</Scripts>
           </CheckButton>
@@ -521,11 +611,28 @@
       			</Scripts>
           </Frame>
 
-          <Frame name="$parentAbsorbsTexture" inherits="VuhDoContextColorSwatchTexture">
+          <Frame name="$parentIncomingOthersTexture" inherits="VuhDoContextColorSwatchTexture">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
                   <AbsDimension x="13" y="-124" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.INCOMING_OTHERS");
+			      		VUHDO_lnfInitColorSwatch(self, VUHDO_I18N_INCOMING_OTHERS, VUHDO_I18N_INCOMING_OTHERS);
+					    	VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_512);
+			      	</OnLoad>
+      			</Scripts>
+          </Frame>
+
+          <Frame name="$parentAbsorbsTexture" inherits="VuhDoContextColorSwatchTexture">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-162" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -542,7 +649,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-162" />
+                  <AbsDimension x="13" y="-200" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -555,11 +662,28 @@
       			</Scripts>
           </Frame>
 
+          <Frame name="$parentAbsorbsOverTexture" inherits="VuhDoContextColorSwatchTexture">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="13" y="-238" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.BAR_COLORS.ABSORBS_OVER");
+			      		VUHDO_lnfInitColorSwatch(self, VUHDO_I18N_ABSORBS_OVER, VUHDO_I18N_ABSORBS_OVER);
+					    	VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_509);
+			      	</OnLoad>
+      			</Scripts>
+          </Frame>
+
           <Frame name="$parentRangeTexture" inherits="VuhDoContextColorSwatchTexture">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-200" />
+                  <AbsDimension x="13" y="-276" />
                 </Offset>
               </Anchor>
             </Anchors>

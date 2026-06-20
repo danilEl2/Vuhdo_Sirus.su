@@ -83,7 +83,7 @@
 				<AbsValue val="16" />
 			</TileSize>
 			<EdgeSize>
-				<AbsValue val="1" />
+				<AbsValue val="0" />
 			</EdgeSize>
 			<BorderColor r="0.6" g="0.6" b="0.6" />
 		</Backdrop>
