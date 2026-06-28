@@ -57,20 +57,36 @@ local function VUHDO_activateSpellForSpec(aSpecId)
 	end
 end
 
+local VUHDO_LAST_TALENT_GROUP = nil;
+
 -- local
 function VUHDO_activateSpecc(aSpeccNum)
+	VUHDO_LAST_TALENT_GROUP = aSpeccNum;
 	VUHDO_activateSpellForSpec("" .. aSpeccNum);
 
-	if (1 == aSpeccNum and VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_1"] ~= nil) then
-		VUHDO_loadProfile(VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_1"]);
-	elseif (2 == aSpeccNum and VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"] ~= nil) then
-		VUHDO_loadProfile(VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"]);
+	local tProfileName = VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_" .. aSpeccNum];
+	if (tProfileName ~= nil) then
+		VUHDO_loadProfile(tProfileName);
+	end
+end
+
+--
+function VUHDO_initTalentGroupTracking()
+	VUHDO_LAST_TALENT_GROUP = GetActiveTalentGroup();
+end
+
+--
+function VUHDO_playerTalentUpdate()
+	local tGroup = GetActiveTalentGroup();
+	if (tGroup ~= nil and tGroup ~= VUHDO_LAST_TALENT_GROUP) then
+		VUHDO_activateSpecc(tGroup);
 	end
 end
 
 local VUHDO_TALENT_CHANGE_SPELLS = {
 	[VUHDO_SPELL_ID_ACTIVATE_FIRST_TALENT] = true,
 	[VUHDO_SPELL_ID_ACTIVATE_SECOND_TALENT] = true,
+	[VUHDO_SPELL_ID_ACTIVATE_THIRD_TALENT] = true,
 	[VUHDO_SPELL_ID_BUFF_FROST_PRESENCE] = true,
 	[VUHDO_SPELL_ID_BUFF_BLOOD_PRESENCE] = true,
 	[VUHDO_SPELL_ID_BUFF_UNHOLY_PRESENCE] = true
@@ -96,6 +112,8 @@ function VUHDO_spellcastSucceeded(aUnit, aSpellName)
 		VUHDO_activateSpecc(1);
 	elseif (VUHDO_SPELL_ID_ACTIVATE_SECOND_TALENT == aSpellName) then
 		VUHDO_activateSpecc(2);
+	elseif (VUHDO_SPELL_ID_ACTIVATE_THIRD_TALENT == aSpellName) then
+		VUHDO_activateSpecc(3);
 	end
 end
 

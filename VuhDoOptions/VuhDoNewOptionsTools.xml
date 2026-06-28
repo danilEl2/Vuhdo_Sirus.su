@@ -4,7 +4,29 @@
 
   <Frame name="VuhDoNewOptionsToolsTemplate" virtual="true">
     <Frames>
-      <Frame name="$parentRadioPanel">
+
+      <Frame name="$parentContentPanel">
+        <Size>
+          <AbsDimension x="428" y="345" />
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="0" y="0" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Frames>
+        	<Frame name="VuhDoNewOptionsToolsSkins" setAllPoints="true" inherits="VuhDoNewOptionsToolsSkinsTemplate">
+        	</Frame>
+        	<Frame name="VuhDoNewOptionsToolsWizard" hidden="true" setAllPoints="true" inherits="VuhDoNewOptionsToolsWizardTemplate">
+        	</Frame>
+        	<Frame name="VuhDoNewOptionsToolsReset" hidden="true" setAllPoints="true" inherits="VuhDoNewOptionsToolsResetTemplate">
+        	</Frame>
+        </Frames>
+      </Frame>
+
+      <Frame name="$parentRadioPanel" frameStrata="HIGH">
         <Size>
           <AbsDimension x="115" y="231" />
         </Size>
@@ -80,26 +102,6 @@
         </Frames>
       </Frame>
 
-      <Frame name="$parentContentPanel">
-        <Size>
-          <AbsDimension x="428" y="345" />
-        </Size>
-        <Anchors>
-          <Anchor point="TOPLEFT">
-            <Offset>
-              <AbsDimension x="0" y="0" />
-            </Offset>
-          </Anchor>
-        </Anchors>
-        <Frames>
-        	<Frame name="VuhDoNewOptionsToolsSkins" setAllPoints="true" inherits="VuhDoNewOptionsToolsSkinsTemplate">
-        	</Frame>
-        	<Frame name="VuhDoNewOptionsToolsWizard" hidden="true" setAllPoints="true" inherits="VuhDoNewOptionsToolsWizardTemplate">
-        	</Frame>
-        	<Frame name="VuhDoNewOptionsToolsReset" hidden="true" setAllPoints="true" inherits="VuhDoNewOptionsToolsResetTemplate">
-        	</Frame>
-        </Frames>
-      </Frame>
     </Frames>
   </Frame>
 </Ui>

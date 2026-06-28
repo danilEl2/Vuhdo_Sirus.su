@@ -207,6 +207,7 @@ function VUHDO_OnLoad(anInstance)
 	anInstance:RegisterEvent("READY_CHECK_FINISHED");
 	anInstance:RegisterEvent("CVAR_UPDATE");
 	anInstance:RegisterEvent("INSPECT_TALENT_READY");
+	anInstance:RegisterEvent("PLAYER_TALENT_UPDATE");
 
 	anInstance:RegisterEvent("MODIFIER_STATE_CHANGED");
 
@@ -347,6 +348,7 @@ local function VUHDO_init()
 	VUHDO_loadVariables(); -- 2. umgekehrt undefiniertes Verhalten (VUHDO_CONFIG ist nil etc.)
 	VUHDO_initAllBurstCaches();
 	VUHDO_VARIABLES_LOADED = true;
+	VUHDO_initTalentGroupTracking();
 
 	VUHDO_initPanelModels();
 	VUHDO_initFromSpellbook();
@@ -541,6 +543,10 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 		end
 	elseif ("INSPECT_TALENT_READY" == anEvent) then
 		VUHDO_inspectLockRole();
+	elseif ("PLAYER_TALENT_UPDATE" == anEvent) then
+		if (VUHDO_VARIABLES_LOADED) then
+			VUHDO_playerTalentUpdate();
+		end
 	elseif ("MODIFIER_STATE_CHANGED" == anEvent) then
 		if (VuhDoTooltip:IsShown()) then
 			VUHDO_updateTooltip();

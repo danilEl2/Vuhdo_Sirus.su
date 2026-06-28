@@ -169,7 +169,7 @@
 
       <Frame name="$parentAutoEnablePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="230" y="155" />
+          <AbsDimension x="255" y="155" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
@@ -364,12 +364,12 @@
 
           <CheckButton name="$parentSpec1CheckButton" text="VUHDO_I18N_SPEC_1" inherits="VuhDoCheckButtonTemplate">
             <Size>
-              <AbsDimension x="85" y="32" />
+              <AbsDimension x="75" y="32" />
             </Size>
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="25" y="-113" />
+                  <AbsDimension x="10" y="-113" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -391,12 +391,12 @@
 
           <CheckButton name="$parentSpec2CheckButton" text="VUHDO_I18N_SPEC_2" inherits="VuhDoCheckButtonTemplate">
             <Size>
-              <AbsDimension x="85" y="32" />
+              <AbsDimension x="75" y="32" />
             </Size>
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="115" y="-113" />
+                  <AbsDimension x="90" y="-113" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -412,6 +412,33 @@
 					    <OnClick>
 					    	VUHDO_lnfCheckButtonClicked(self);
 			      		VUHDO_skinsAutoCheckButtonClicked(self, "SPEC_2");
+    					</OnClick>
+      			</Scripts>
+          </CheckButton>
+
+          <CheckButton name="$parentSpec3CheckButton" text="VUHDO_I18N_SPEC_3" inherits="VuhDoCheckButtonTemplate">
+            <Size>
+              <AbsDimension x="75" y="32" />
+            </Size>
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="170" y="-113" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_513);
+			      	</OnLoad>
+			      	<OnShow>
+			      		VUHDO_lnfPatchFont(self, "Label"); VUHDO_lnfRadioButtonOnShow(self);
+			      		VUHDO_lnfCheckButtonInitFromModel(self);
+			      		VUHDO_skinsInitAutoCheckButton(self, "SPEC_3");
+			      	</OnShow>
+					    <OnClick>
+					    	VUHDO_lnfCheckButtonClicked(self);
+			      		VUHDO_skinsAutoCheckButtonClicked(self, "SPEC_3");
     					</OnClick>
       			</Scripts>
           </CheckButton>
@@ -495,7 +522,7 @@
 
       <Frame name="$parentExportCuDePanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="285" y="163" />
+          <AbsDimension x="255" y="163" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
