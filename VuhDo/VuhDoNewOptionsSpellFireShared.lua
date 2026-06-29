@@ -32,5 +32,9 @@ function VUHDO_activateLayout(aName)
 	VUHDO_initBuffs();
 	VUHDO_initDebuffs();
 	VUHDO_initKeyboardMacros();
-	VUHDO_timeReloadUI(1);
+	if (not InCombatLockdown()) then
+		VUHDO_reloadUI();
+	else
+		VUHDO_timeReloadUI(1);
+	end
 end

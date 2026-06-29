@@ -378,7 +378,7 @@ local function VUHDO_fixDominantProfileSettings(aProfile)
 end
 
 --
-function VUHDO_loadProfileNoInit(aName)
+function VUHDO_loadProfileNoInit(aName, aSkipSpellBindings)
 	local tIndex, tProfile = VUHDO_getProfileNamed(aName);
 	if (tIndex == nil) then
 		VUHDO_Msg(VUHDO_I18N_ERROR_NO_PROFILE .. "\"" .. aName .. "\" !", 1, 0.4, 0.4);
@@ -403,7 +403,9 @@ function VUHDO_loadProfileNoInit(aName)
 	VUHDO_INDICATOR_CONFIG = VUHDO_smartLoadFromProfile(VUHDO_INDICATOR_CONFIG, tProfile["INDICATOR_CONFIG"],
 	VUHDO_PROFILE_MODEL["INDICATOR_CONFIG"], VUHDO_PROFILE_MODEL_MATCH_ALL);
 
-	VUHDO_loadProfileSpellBindings(aName, tProfile);
+	if (not aSkipSpellBindings) then
+		VUHDO_loadProfileSpellBindings(aName, tProfile);
+	end
 
 	VUHDO_fixDominantProfileSettings(tProfile);
 	VUHDO_CONFIG["CURRENT_PROFILE"] = aName;
@@ -411,8 +413,8 @@ function VUHDO_loadProfileNoInit(aName)
 end
 
 --
-function VUHDO_loadProfile(aName)
-	VUHDO_loadProfileNoInit(aName);
+function VUHDO_loadProfile(aName, aSkipSpellBindings)
+	VUHDO_loadProfileNoInit(aName, aSkipSpellBindings);
 	VUHDO_initAllBurstCaches();
 	VUHDO_loadVariables();
 	VUHDO_initPanelModels();

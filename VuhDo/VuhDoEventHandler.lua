@@ -373,6 +373,21 @@ local function VUHDO_init()
 	if (not InCombatLockdown()) then
 		VUHDO_initKeyboardMacros();
 	end
+
+	do
+		local tActiveSpec = GetActiveTalentGroup();
+		local tSpecKey;
+		local tLayoutName;
+
+		if (tActiveSpec ~= nil) then
+			tSpecKey = "" .. tActiveSpec;
+			tLayoutName = VUHDO_SPEC_LAYOUTS[tSpecKey];
+			if (tLayoutName ~= nil and strlen(tLayoutName) > 0 and VUHDO_SPELL_LAYOUTS[tLayoutName] ~= nil) then
+				VUHDO_activateLayout(tLayoutName);
+			end
+		end
+	end
+
 	VUHDO_timeReloadUI(3);
 end
 

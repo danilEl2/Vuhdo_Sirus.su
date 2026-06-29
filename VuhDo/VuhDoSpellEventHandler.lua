@@ -58,17 +58,43 @@ local function VUHDO_activateSpellForSpec(aSpecId)
 end
 
 local VUHDO_LAST_TALENT_GROUP = nil;
+local VUHDO_IS_ACTIVATING_SPECC = false;
 
 -- local
 function VUHDO_activateSpecc(aSpeccNum)
-	VUHDO_LAST_TALENT_GROUP = aSpeccNum;
+	local tSpecKey;
+	local tLayoutName;
+	local tHasLayout;
+	local tProfileName;
+	local tCurrentGroup;
 
-	local tProfileName = VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_" .. aSpeccNum];
-	if (tProfileName ~= nil) then
-		VUHDO_loadProfile(tProfileName);
+	if (VUHDO_IS_ACTIVATING_SPECC) then
+		return;
 	end
 
-	VUHDO_activateSpellForSpec("" .. aSpeccNum);
+	VUHDO_IS_ACTIVATING_SPECC = true;
+
+	tSpecKey = "" .. aSpeccNum;
+	tLayoutName = VUHDO_SPEC_LAYOUTS[tSpecKey];
+	tHasLayout = tLayoutName ~= nil and strlen(tLayoutName) > 0 and VUHDO_SPELL_LAYOUTS[tLayoutName] ~= nil;
+
+	if (tHasLayout) then
+		VUHDO_activateLayout(tLayoutName);
+	elseif (tLayoutName ~= nil and strlen(tLayoutName) > 0) then
+		VUHDO_Msg("Spell layout \"" .. tLayoutName .. "\" doesn't exist.", 1, 0.4, 0.4);
+	end
+
+	tProfileName = VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_" .. aSpeccNum];
+	if (tProfileName ~= nil) then
+		VUHDO_loadProfile(tProfileName, tHasLayout);
+	end
+
+	tCurrentGroup = GetActiveTalentGroup();
+	if (tCurrentGroup == aSpeccNum) then
+		VUHDO_LAST_TALENT_GROUP = aSpeccNum;
+	end
+
+	VUHDO_IS_ACTIVATING_SPECC = false;
 end
 
 --
