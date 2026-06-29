@@ -126,6 +126,30 @@
 						</Scripts>
 					</CheckButton>
 
+					<CheckButton name="$parentSpec3CheckButton" text="VUHDO_I18N_SPEC_3" inherits="VuhDoCheckButtonTemplate">
+						<Size>
+							<AbsDimension x="80" y="32" />
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset>
+									<AbsDimension x="197" y="-70" />
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+							<OnClick>
+								VUHDO_keyLayoutSpecOnClick(self, "3");
+							VUHDO_lnfCheckButtonClicked(self);
+							</OnClick>
+							<OnShow>
+								VUHDO_lnfPatchFont(self, "Label");
+						self:SetChecked(VUHDO_SPEC_LAYOUTS.selected == VUHDO_SPEC_LAYOUTS["3"]);
+						VUHDO_lnfCheckButtonClicked(self);
+							</OnShow>
+						</Scripts>
+					</CheckButton>
+
 					<Button name="$parentDeleteButton" text="VUHDO_I18N_DELETE" inherits="VuhDoButtonTemplate">
 						<Size>
 							<AbsDimension x="100" y="32" />

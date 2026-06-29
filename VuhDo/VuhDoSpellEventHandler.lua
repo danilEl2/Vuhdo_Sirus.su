@@ -62,12 +62,13 @@ local VUHDO_LAST_TALENT_GROUP = nil;
 -- local
 function VUHDO_activateSpecc(aSpeccNum)
 	VUHDO_LAST_TALENT_GROUP = aSpeccNum;
-	VUHDO_activateSpellForSpec("" .. aSpeccNum);
 
 	local tProfileName = VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_" .. aSpeccNum];
 	if (tProfileName ~= nil) then
 		VUHDO_loadProfile(tProfileName);
 	end
+
+	VUHDO_activateSpellForSpec("" .. aSpeccNum);
 end
 
 --

@@ -98,6 +98,9 @@ local function VUHDO_createNewProfile(aName)
 		["PANEL_SETUP"] = VUHDO_deepCopyTable(VUHDO_PANEL_SETUP),
 		["POWER_TYPE_COLORS"] = VUHDO_deepCopyTable(VUHDO_POWER_TYPE_COLORS),
 		["SPELL_CONFIG"] = VUHDO_deepCopyTable(VUHDO_SPELL_CONFIG),
+		["SPELL_ASSIGNMENTS"] = VUHDO_deepCopyTable(VUHDO_SPELL_ASSIGNMENTS),
+		["HOSTILE_SPELL_ASSIGNMENTS"] = VUHDO_deepCopyTable(VUHDO_HOSTILE_SPELL_ASSIGNMENTS),
+		["SPELLS_KEYBOARD"] = VUHDO_deepCopyTable(VUHDO_SPELLS_KEYBOARD),
 		["BUFF_SETTINGS"] = VUHDO_deepCopyTable(VUHDO_BUFF_SETTINGS),
 		["BUFF_ORDER"] = VUHDO_deepCopyTable(VUHDO_BUFF_ORDER),
 		["INDICATOR_CONFIG"] = VUHDO_deepCopyTable(VUHDO_INDICATOR_CONFIG)
@@ -254,6 +257,18 @@ local VUHDO_PROFILE_MODEL = {
 		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_TOON
 	},
 
+	["SPELL_ASSIGNMENTS"] = {
+		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_TOON
+	},
+
+	["HOSTILE_SPELL_ASSIGNMENTS"] = {
+		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_TOON
+	},
+
+	["SPELLS_KEYBOARD"] = {
+		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_TOON
+	},
+
 	["BUFF_SETTINGS"] = {
 		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_CLASS,
 
@@ -325,6 +340,31 @@ local function VUHDO_smartLoadFromProfile(aDestArray, aSourceArray, aProfileMode
 end
 
 --
+local function VUHDO_loadProfileSpellBindings(aName, aProfile)
+	if (not VUHDO_isProfileRuleAllowed(VUHDO_PROFILE_MODEL_MATCH_TOON, tOriginatorClass, tOriginatorToon)) then
+		return;
+	end
+
+	if (aProfile["SPELL_ASSIGNMENTS"] ~= nil) then
+		VUHDO_SPELL_ASSIGNMENTS = VUHDO_deepCopyTable(aProfile["SPELL_ASSIGNMENTS"]);
+		if (aProfile["HOSTILE_SPELL_ASSIGNMENTS"] ~= nil) then
+			VUHDO_HOSTILE_SPELL_ASSIGNMENTS = VUHDO_deepCopyTable(aProfile["HOSTILE_SPELL_ASSIGNMENTS"]);
+		end
+		if (aProfile["SPELLS_KEYBOARD"] ~= nil) then
+			VUHDO_SPELLS_KEYBOARD = VUHDO_deepCopyTable(aProfile["SPELLS_KEYBOARD"]);
+		end
+	elseif (VUHDO_SPELL_LAYOUTS[aName] ~= nil) then
+		VUHDO_SPELL_ASSIGNMENTS = VUHDO_deepCopyTable(VUHDO_SPELL_LAYOUTS[aName]["MOUSE"]);
+		if (VUHDO_SPELL_LAYOUTS[aName]["HOSTILE_MOUSE"] ~= nil) then
+			VUHDO_HOSTILE_SPELL_ASSIGNMENTS = VUHDO_deepCopyTable(VUHDO_SPELL_LAYOUTS[aName]["HOSTILE_MOUSE"]);
+		end
+		if (VUHDO_SPELL_LAYOUTS[aName]["KEYS"] ~= nil) then
+			VUHDO_SPELLS_KEYBOARD = VUHDO_deepCopyTable(VUHDO_SPELL_LAYOUTS[aName]["KEYS"]);
+		end
+	end
+end
+
+--
 local function VUHDO_fixDominantProfileSettings(aProfile)
 	local tCnt;
 
@@ -363,6 +403,8 @@ function VUHDO_loadProfileNoInit(aName)
 	VUHDO_INDICATOR_CONFIG = VUHDO_smartLoadFromProfile(VUHDO_INDICATOR_CONFIG, tProfile["INDICATOR_CONFIG"],
 	VUHDO_PROFILE_MODEL["INDICATOR_CONFIG"], VUHDO_PROFILE_MODEL_MATCH_ALL);
 
+	VUHDO_loadProfileSpellBindings(aName, tProfile);
+
 	VUHDO_fixDominantProfileSettings(tProfile);
 	VUHDO_CONFIG["CURRENT_PROFILE"] = aName;
 	VUHDO_Msg(VUHDO_I18N_PROFILE_LOADED .. aName);
@@ -375,12 +417,17 @@ function VUHDO_loadProfile(aName)
 	VUHDO_loadVariables();
 	VUHDO_initPanelModels();
 	VUHDO_initDynamicPanelModels();
+	VUHDO_initFromSpellbook();
 	VUHDO_registerAllBouquets();
 	VUHDO_initAllEventBouquets();
+	VUHDO_initBuffs();
 	VUHDO_initDebuffs();
 	VUHDO_reloadUI();
 	VUHDO_resetTooltip();
 	VUHDO_initBlizzFrames();
+	if (not InCombatLockdown()) then
+		VUHDO_initKeyboardMacros();
+	end
 	if (VUHDO_initCustomDebuffComboModel ~= nil) then
 		VUHDO_initCustomDebuffComboModel();
 	end

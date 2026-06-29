@@ -476,8 +476,11 @@ function VUHDO_loadSpellArray()
 		VUHDO_SPEC_LAYOUTS = {
 			["selected"] = "",
 			["1"] = "",
-			["2"] = ""
+			["2"] = "",
+			["3"] = ""
 		}
+	elseif (VUHDO_SPEC_LAYOUTS["3"] == nil) then
+		VUHDO_SPEC_LAYOUTS["3"] = "";
 	end
 
 end
