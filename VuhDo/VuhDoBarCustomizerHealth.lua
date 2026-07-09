@@ -132,7 +132,7 @@ local VUHDO_ABSORB_SEAM_OVERLAP_PX = 1;
 local VUHDO_INC_SEAM_OVERLAP_PX = 1;
 
 local tDefaultAbsorbColor = {
-	["R"] = 0, ["G"] = 0.92, ["B"] = 1, ["O"] = 0.82,
+	["R"] = 0.66, ["G"] = 0.93, ["B"] = 1, ["O"] = 0.78,
 	["useBackground"] = true, ["useOpacity"] = true,
 };
 
@@ -179,19 +179,35 @@ end
 --
 local function VUHDO_getAbsorbBarTextureName(aIsHealthFull)
 	if (aIsHealthFull) then
-		return VUHDO_CONFIG["ABSORB_TEXTURE_FULL"] or VUHDO_CONFIG["ABSORB_TEXTURE"] or VUHDO_ABSORB_TEXTURE_DEFAULT;
-	else
-		return VUHDO_CONFIG["ABSORB_TEXTURE"] or VUHDO_ABSORB_TEXTURE_DEFAULT;
+		return nil;
 	end
+
+	return VUHDO_CONFIG["ABSORB_TEXTURE"] or VUHDO_ABSORB_TEXTURE_DEFAULT;
 end
 
 --
 local function VUHDO_applyAbsorbBarTexture(anAbsBar, aIsHealthFull)
+	local tTextureName;
+	local tTex;
+
 	if (anAbsBar == nil) then
 		return;
 	end
 
-	VUHDO_setLlcStatusBarTexture(anAbsBar, VUHDO_getAbsorbBarTextureName(aIsHealthFull));
+	tTextureName = VUHDO_getAbsorbBarTextureName(aIsHealthFull);
+	if (tTextureName == nil) then
+		tTex = anAbsBar:GetStatusBarTexture();
+		if (tTex ~= nil) then
+			tTex:Hide();
+		end
+		return;
+	end
+
+	VUHDO_setLlcStatusBarTexture(anAbsBar, tTextureName);
+	tTex = anAbsBar:GetStatusBarTexture();
+	if (tTex ~= nil) then
+		tTex:Show();
+	end
 end
 
 --
@@ -500,8 +516,8 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 
 		tAbsBar:SetValueRange(tAbsStart, aLayout["absorbEndPct"]);
 		VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, tAbsColor, tHlBar);
-		VUHDO_updateAbsorbOverlay(tAbsBar, true, tHlBar);
-		VUHDO_updateOverAbsorbGlow(tAbsBar, aLayout["hasOverAbsorb"], tHlBar);
+		VUHDO_updateAbsorbOverlay(tAbsBar, not aLayout["isHealthFull"], tHlBar);
+		VUHDO_updateOverAbsorbGlow(tAbsBar, aLayout["hasOverAbsorb"] and aLayout["isHealthFull"], tHlBar);
 	end
 end
 

@@ -31,8 +31,10 @@ function VUHDO_keyLayoutComboChanged(aComboBox, aValue)
 
 	VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec1CheckButton"]:SetChecked(aValue == VUHDO_SPEC_LAYOUTS["1"]);
 	VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec2CheckButton"]:SetChecked(aValue == VUHDO_SPEC_LAYOUTS["2"]);
+	VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec3CheckButton"]:SetChecked(aValue == VUHDO_SPEC_LAYOUTS["3"]);
 	VUHDO_lnfCheckButtonClicked(VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec1CheckButton"]);
 	VUHDO_lnfCheckButtonClicked(VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec2CheckButton"]);
+	VUHDO_lnfCheckButtonClicked(VUHDO_GLOBAL[aComboBox:GetParent():GetName() .. "Spec3CheckButton"]);
 end
 
 

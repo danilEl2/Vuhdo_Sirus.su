@@ -57,20 +57,63 @@ local function VUHDO_activateSpellForSpec(aSpecId)
 	end
 end
 
+local VUHDO_LAST_TALENT_GROUP = nil;
+local VUHDO_IS_ACTIVATING_SPECC = false;
+
 -- local
 function VUHDO_activateSpecc(aSpeccNum)
-	VUHDO_activateSpellForSpec("" .. aSpeccNum);
+	local tSpecKey;
+	local tLayoutName;
+	local tHasLayout;
+	local tProfileName;
+	local tCurrentGroup;
 
-	if (1 == aSpeccNum and VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_1"] ~= nil) then
-		VUHDO_loadProfile(VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_1"]);
-	elseif (2 == aSpeccNum and VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"] ~= nil) then
-		VUHDO_loadProfile(VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"]);
+	if (VUHDO_IS_ACTIVATING_SPECC) then
+		return;
+	end
+
+	VUHDO_IS_ACTIVATING_SPECC = true;
+
+	tSpecKey = "" .. aSpeccNum;
+	tLayoutName = VUHDO_SPEC_LAYOUTS[tSpecKey];
+	tHasLayout = tLayoutName ~= nil and strlen(tLayoutName) > 0 and VUHDO_SPELL_LAYOUTS[tLayoutName] ~= nil;
+
+	if (tHasLayout) then
+		VUHDO_activateLayout(tLayoutName);
+	elseif (tLayoutName ~= nil and strlen(tLayoutName) > 0) then
+		VUHDO_Msg("Spell layout \"" .. tLayoutName .. "\" doesn't exist.", 1, 0.4, 0.4);
+	end
+
+	tProfileName = VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_" .. aSpeccNum];
+	if (tProfileName ~= nil) then
+		VUHDO_loadProfile(tProfileName, tHasLayout);
+	end
+
+	tCurrentGroup = GetActiveTalentGroup();
+	if (tCurrentGroup == aSpeccNum) then
+		VUHDO_LAST_TALENT_GROUP = aSpeccNum;
+	end
+
+	VUHDO_IS_ACTIVATING_SPECC = false;
+end
+
+--
+function VUHDO_initTalentGroupTracking()
+	VUHDO_LAST_TALENT_GROUP = GetActiveTalentGroup();
+end
+
+--
+function VUHDO_playerTalentUpdate()
+	local tGroup = GetActiveTalentGroup();
+	if (tGroup ~= nil and tGroup ~= VUHDO_LAST_TALENT_GROUP) then
+		VUHDO_activateSpecc(tGroup);
 	end
 end
 
 local VUHDO_TALENT_CHANGE_SPELLS = {
 	[VUHDO_SPELL_ID_ACTIVATE_FIRST_TALENT] = true,
 	[VUHDO_SPELL_ID_ACTIVATE_SECOND_TALENT] = true,
+	[VUHDO_SPELL_ID_ACTIVATE_THIRD_TALENT] = true,
 	[VUHDO_SPELL_ID_BUFF_FROST_PRESENCE] = true,
 	[VUHDO_SPELL_ID_BUFF_BLOOD_PRESENCE] = true,
 	[VUHDO_SPELL_ID_BUFF_UNHOLY_PRESENCE] = true
@@ -96,6 +139,8 @@ function VUHDO_spellcastSucceeded(aUnit, aSpellName)
 		VUHDO_activateSpecc(1);
 	elseif (VUHDO_SPELL_ID_ACTIVATE_SECOND_TALENT == aSpellName) then
 		VUHDO_activateSpecc(2);
+	elseif (VUHDO_SPELL_ID_ACTIVATE_THIRD_TALENT == aSpellName) then
+		VUHDO_activateSpecc(3);
 	end
 end
 

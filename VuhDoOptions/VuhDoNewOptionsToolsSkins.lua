@@ -67,6 +67,10 @@ local function VUHDO_deleteAutoProfile(tName)
 	if (VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"] == tName) then
 		VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_2"] = nil;
 	end
+
+	if (VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_3"] == tName) then
+		VUHDO_CONFIG["AUTO_PROFILES"]["SPEC_3"] = nil;
+	end
 end
 
 
@@ -121,6 +125,9 @@ local function VUHDO_updateAllAutoProfiles(aComponent)
 
 	tButton = VUHDO_GLOBAL[aComponent:GetParent():GetParent():GetName() .. "AutoEnablePanelSpec2CheckButton"];
 	VUHDO_skinsInitAutoCheckButton(tButton, "SPEC_2");
+
+	tButton = VUHDO_GLOBAL[aComponent:GetParent():GetParent():GetName() .. "AutoEnablePanelSpec3CheckButton"];
+	VUHDO_skinsInitAutoCheckButton(tButton, "SPEC_3");
 
 	tButton = VUHDO_GLOBAL[aComponent:GetParent():GetParent():GetName() .. "SettingsPanelLockCheckButton"];
 	VUHDO_skinsInitLockCheckButton(tButton);
