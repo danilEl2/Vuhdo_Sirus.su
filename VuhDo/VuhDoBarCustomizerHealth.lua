@@ -45,6 +45,7 @@ local VUHDO_INTERNAL_TOGGLES;
 local abs = abs;
 local floor = floor;
 local min = math.min;
+local max = math.max;
 local strlen = strlen;
 local strfind = strfind;
 local strbyte = strbyte;
@@ -178,10 +179,6 @@ end
 
 --
 local function VUHDO_getAbsorbBarTextureName(aIsHealthFull)
-	if (aIsHealthFull) then
-		return nil;
-	end
-
 	return VUHDO_CONFIG["ABSORB_TEXTURE"] or VUHDO_ABSORB_TEXTURE_DEFAULT;
 end
 
@@ -268,6 +265,8 @@ end
 --
 local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 	local tGlow = anAbsBar["vuhdoOverAbsorbGlow"];
+	local tAnchor;
+	local tHlTex;
 
 	if (tGlow == nil) then
 		return;
@@ -279,7 +278,16 @@ local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 	end
 
 	tAbsBarTex = anAbsBar:GetStatusBarTexture();
-	if (tAbsBarTex == nil) then
+	tAnchor = tAbsBarTex;
+	-- На полном HP текстура абсорба скрыта / нулевой ширины — якорим glow к краю HP.
+	if (aHealthBar ~= nil) then
+		tHlTex = aHealthBar:GetStatusBarTexture();
+		if (tHlTex ~= nil and (tAbsBarTex == nil or not tAbsBarTex:IsShown() or tAbsBarTex:GetWidth() < 1)) then
+			tAnchor = tHlTex;
+		end
+	end
+
+	if (tAnchor == nil) then
 		tGlow:Hide();
 		return;
 	end
@@ -289,9 +297,9 @@ local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 	tGlow:ClearAllPoints();
 
 	if (VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"]) then
-		tGlow:SetPoint("RIGHT", tAbsBarTex, "LEFT", -7, 0);
+		tGlow:SetPoint("RIGHT", tAnchor, "LEFT", -7, 0);
 	else
-		tGlow:SetPoint("LEFT", tAbsBarTex, "RIGHT", -7, 0);
+		tGlow:SetPoint("LEFT", tAnchor, "RIGHT", -7, 0);
 	end
 
 	if (aHealthBar ~= nil) then
@@ -431,16 +439,11 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 
 	local tEffectiveInc = tEffectiveMy + tEffectiveOther;
 
-	local tHealthPlusAbs = tHealth + tAbs;
 	local tHealthPlusMyInc = tHealth + tEffectiveMy;
 	local tHealthPlusInc = tHealth + tEffectiveInc;
 
-	-- Масштаб HP/абсорба: max HP или переполнение щита, но не входящее исцеление.
-	-- Иначе большой direct heal сжимает полосу здоровья и «отрывает» абсорб от её правого края.
+	-- Всегда шкала от max HP: не сжимаем HP ради overshield.
 	local tBarDenom = tMax;
-	if (tHealthPlusAbs > tBarDenom) then
-		tBarDenom = tHealthPlusAbs;
-	end
 
 	tHealBarLayout["healthPct"] = min(100, 100 * tHealth / tBarDenom);
 	tHealBarLayout["myIncStartPct"] = tHealBarLayout["healthPct"];
@@ -461,13 +464,20 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	-- Абсорб после входящего исцеления (как Blizzard), иначе при большом direct heal
 	-- полоса поглощения рисуется поверх входящего и визуально «встаёт» между HP и хилом.
 	local tAbsorbStart = tHealth + tEffectiveInc;
-	tHealBarLayout["absorbStartPct"] = min(100, 100 * tAbsorbStart / tBarDenom);
-	tHealBarLayout["absorbEndPct"] = min(100, 100 * (tAbsorbStart + tAbs) / tBarDenom);
 	tHealBarLayout["hasAbsorb"] = tAbs > 0 and anInfo["connected"] and not anInfo["dead"];
 	tHealBarLayout["isHealthFull"] = tHealth >= tMax;
 
 	local tHealthPlusIncAbs = tHealth + tEffectiveInc + tAbs;
 	tHealBarLayout["hasOverAbsorb"] = tHealBarLayout["hasAbsorb"] and tHealthPlusIncAbs >= tMax;
+
+	if (tHealBarLayout["hasAbsorb"] and tAbsorbStart >= tMax) then
+		-- Полный HP: рисуем щит поверх бара справа по доле absorb/maxHP (не делим фрейм 50/50).
+		tHealBarLayout["absorbEndPct"] = 100;
+		tHealBarLayout["absorbStartPct"] = max(0, 100 - 100 * tAbs / tMax);
+	else
+		tHealBarLayout["absorbStartPct"] = min(100, 100 * tAbsorbStart / tBarDenom);
+		tHealBarLayout["absorbEndPct"] = min(100, 100 * (tAbsorbStart + tAbs) / tBarDenom);
+	end
 
 	return tHealBarLayout;
 end
@@ -485,13 +495,14 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 		or aLayout["absorbEndPct"] <= aLayout["absorbStartPct"]) then
 		for _, tButton in pairs(tAllButtons) do
 			tAbsBar = VUHDO_getHealthBar(tButton, 17);
+			tHlBar = VUHDO_getHealthBar(tButton, 1);
 			if (VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"]) then
 				tAbsBar:SetValueRange(0, 0);
 			else
 				tAbsBar:SetValue(0);
 			end
 			VUHDO_updateAbsorbOverlay(tAbsBar, false);
-			VUHDO_updateOverAbsorbGlow(tAbsBar, false);
+			VUHDO_updateOverAbsorbGlow(tAbsBar, false, tHlBar);
 		end
 		return;
 	end
@@ -504,7 +515,7 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 		VUHDO_applyAbsorbBarTexture(tAbsBar, aLayout["isHealthFull"]);
 
 		tAbsStart = aLayout["absorbStartPct"];
-		if (aLayout["incEndPct"] > aLayout["incStartPct"]) then
+		if (aLayout["incEndPct"] > aLayout["incStartPct"] and not aLayout["isHealthFull"]) then
 			tBarWidth = tAbsBar:GetWidth();
 			if (tBarWidth > 0) then
 				tAbsStart = tAbsStart - (100 * VUHDO_ABSORB_SEAM_OVERLAP_PX / tBarWidth);
@@ -516,6 +527,7 @@ local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 
 		tAbsBar:SetValueRange(tAbsStart, aLayout["absorbEndPct"]);
 		VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, tAbsColor, tHlBar);
+		-- Overlay-штриховка на missing HP; на полном HP — спокойный fill без паттерна.
 		VUHDO_updateAbsorbOverlay(tAbsBar, not aLayout["isHealthFull"], tHlBar);
 		VUHDO_updateOverAbsorbGlow(tAbsBar, aLayout["hasOverAbsorb"] and aLayout["isHealthFull"], tHlBar);
 	end
