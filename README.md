@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (pre-release `pre-ver.2.23.6` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (release `ver.2.23.6` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -70,7 +70,7 @@
 
 ## История изменений
 
-### pre-ver. 2.23.6 beta (по сравнению с 2.23.5 beta)
+### ver. 2.23.6 beta (по сравнению с 2.23.5 beta)
 
 - Исправлено: abs-бар на полном HP — щит рисуется поверх полосы по доле absorb/maxHP (без сжатия шкалы)
 - Исправлено: over-absorb glow якорится к краю HP, если текстура абсорба скрыта/нулевой ширины

@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: VuhDo
-## Author: Iza@Gilneas
+## Author: EllyaS
 ## Version: 2.23.6 beta
 ## Notes: Raid Frames providing click-heal functionality, buff and debuff control, main tank management and much more
 ## Notes-ruRU: Аддон создает панели с фреймами союзников, танков, питомцев с отображением на них хп, мп, дебафов, хотов и прочего.
