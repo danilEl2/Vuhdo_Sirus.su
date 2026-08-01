@@ -1202,7 +1202,7 @@ local function VUHDO_initPanel(aPanel, aPanelNum)
 	tLabel = VUHDO_getPanelNumLabel(aPanel);
 
 	VUHDO_STD_BACKDROP = aPanel:GetBackdrop();
-	VUHDO_STD_BACKDROP["edgeFile"] = tPanelColor["BORDER"]["file"];
+	VUHDO_STD_BACKDROP["edgeFile"] = VUHDO_getLsmBorderFile(tPanelColor["BORDER"]["file"]);
 	VUHDO_STD_BACKDROP["edgeSize"] = tPanelColor["BORDER"]["edgeSize"];
 	VUHDO_STD_BACKDROP["insets"]["left"] = tPanelColor["BORDER"]["insets"];
 	VUHDO_STD_BACKDROP["insets"]["right"] = tPanelColor["BORDER"]["insets"];

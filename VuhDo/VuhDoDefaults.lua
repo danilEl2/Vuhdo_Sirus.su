@@ -1765,7 +1765,7 @@ local VUHDO_DEFAULT_PER_PANEL_SETUP = {
 			["O"] = 0.46,
 			["useBackground"] = true,
 			["useOpacity"] = true,
-			["file"] = "Interface\\Tooltips\\UI-Tooltip-Border",
+			["file"] = "Blizzard Tooltip",
 			["edgeSize"] = 8,
 			["insets"] = 1
 		},

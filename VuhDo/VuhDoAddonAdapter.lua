@@ -177,10 +177,76 @@ function VUHDO_initSharedMedia()
 	end
 	tinsert(VUHDO_SOUNDS, 1, {nil, "Без звука"});
 
-	-- borders
+	-- borders (store LSM name as value — same pattern as status bars)
 	local tBorders = VUHDO_LibSharedMedia:List('border');
 	for tIndex, tValue in ipairs(tBorders) do
-		VUHDO_BORDERS[tIndex] = {VUHDO_LibSharedMedia:Fetch('border', tValue), tValue};
+		VUHDO_BORDERS[tIndex] = {tValue, tValue};
+	end
+
+	VUHDO_migratePanelBorderFiles();
+end
+
+
+
+-- Resolve panel border key to an edgeFile path.
+-- Accepts LSM media name or legacy/custom texture path.
+function VUHDO_getLsmBorderFile(aKey)
+	if (aKey == nil or aKey == "") then
+		return VUHDO_LibSharedMedia:Fetch("border", "Blizzard Tooltip");
+	end
+
+	if (strfind(aKey, "\\", 1, true) or strfind(aKey, "/", 1, true)) then
+		return aKey;
+	end
+
+	return VUHDO_LibSharedMedia:Fetch("border", aKey);
+end
+
+
+
+-- Convert legacy saved path keys to LSM names where possible.
+function VUHDO_normalizeLsmBorderKey(aKey)
+	if (aKey == nil or aKey == "") then
+		return "Blizzard Tooltip";
+	end
+
+	local tBorders = VUHDO_LibSharedMedia:HashTable("border");
+	if (tBorders[aKey] ~= nil) then
+		return aKey;
+	end
+
+	local tName, tPath;
+	local tNeedle = string.gsub(aKey, "/", "\\");
+	for tName, tPath in pairs(tBorders) do
+		if (string.gsub(tPath, "/", "\\") == tNeedle) then
+			return tName;
+		end
+	end
+
+	-- Unknown custom path: keep as-is (VUHDO_getLsmBorderFile still accepts it)
+	if (strfind(aKey, "\\", 1, true) or strfind(aKey, "/", 1, true)) then
+		return aKey;
+	end
+
+	return "Blizzard Tooltip";
+end
+
+
+
+--
+function VUHDO_migratePanelBorderFiles()
+	if (VUHDO_PANEL_SETUP == nil) then
+		return;
+	end
+
+	local tPanelNum, tBorder;
+	for tPanelNum = 1, VUHDO_MAX_PANELS do
+		if (VUHDO_PANEL_SETUP[tPanelNum] ~= nil
+				and VUHDO_PANEL_SETUP[tPanelNum]["PANEL_COLOR"] ~= nil
+				and VUHDO_PANEL_SETUP[tPanelNum]["PANEL_COLOR"]["BORDER"] ~= nil) then
+			tBorder = VUHDO_PANEL_SETUP[tPanelNum]["PANEL_COLOR"]["BORDER"];
+			tBorder["file"] = VUHDO_normalizeLsmBorderKey(tBorder["file"]);
+		end
 	end
 end
 
