@@ -221,7 +221,7 @@ function VUHDO_OnLoad(anInstance)
 		VUHDO_slashCmd(aMessage);
 	end
 
-	VUHDO_Msg(" v" .. VUHDO_VERSION .. " by Iza(ak). Список команд /vd");
+	VUHDO_Msg(" v" .. VUHDO_VERSION .. " by EllyaS. Список команд /vd");
 end
 
 --

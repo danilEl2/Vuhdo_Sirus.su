@@ -409,6 +409,7 @@ function VUHDO_loadProfileNoInit(aName, aSkipSpellBindings)
 
 	VUHDO_fixDominantProfileSettings(tProfile);
 	VUHDO_CONFIG["CURRENT_PROFILE"] = aName;
+	VUHDO_migratePanelBorderFiles();
 	VUHDO_Msg(VUHDO_I18N_PROFILE_LOADED .. aName);
 end
 

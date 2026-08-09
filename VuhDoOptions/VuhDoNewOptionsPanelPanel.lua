@@ -176,7 +176,11 @@ function VUHDO_newOptionsApplyToAllOnClick()
 		tValue = VUHDO_lnfGetValueFrom(tModel);
 		for tCnt = 1, VUHDO_MAX_PANELS do
 			if (tCnt ~= DESIGN_MISC_PANEL_NUM) then
-				VUHDO_lnfUpdateVar(tModel, tValue, tCnt);
+				if (type(tValue) == "table") then
+					VUHDO_lnfUpdateVar(tModel, VUHDO_deepCopyTable(tValue), tCnt);
+				else
+					VUHDO_lnfUpdateVar(tModel, tValue, tCnt);
+				end
 			end
 		end
 	end

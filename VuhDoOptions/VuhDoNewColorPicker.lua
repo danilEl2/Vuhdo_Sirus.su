@@ -5,6 +5,16 @@ local VUHDO_isTextEdit;
 local VUHDO_origColor;
 local VUHDO_copyPasteColor = { };
 
+-- Only these keys belong to the color swatch. Never wipe siblings like
+-- BORDER.file / edgeSize / insets when committing a color change.
+local VUHDO_COLOR_FIELD_KEYS = {
+	"R", "G", "B", "O",
+	"TR", "TG", "TB", "TO",
+	"useBackground", "useOpacity", "useText"
+};
+
+
+
 --
 local function VUHDO_mayEditText()
 	return VUHDO_COLOR.TR ~= nil and not strfind(VUHDO_PROHIBIT, "T", 1, true);
@@ -15,6 +25,30 @@ end
 --
 local function VUHDO_mayEditBackground()
 	return VUHDO_COLOR.R ~= nil and not strfind(VUHDO_PROHIBIT, "B", 1, true);
+end
+
+
+
+-- Merge color fields into the live model table (preserves non-color keys).
+local function VUHDO_colorPickerCommit(aColorSource)
+	if (VUHDO_COLOR_SWATCH == nil or aColorSource == nil) then
+		return;
+	end
+
+	local tTarget = VUHDO_lnfGetValueFromModel(VUHDO_COLOR_SWATCH);
+	if (tTarget == nil) then
+		return;
+	end
+
+	if (tTarget ~= aColorSource) then
+		local tKey, tIndex;
+		for tIndex, tKey in ipairs(VUHDO_COLOR_FIELD_KEYS) do
+			tTarget[tKey] = aColorSource[tKey];
+		end
+	end
+
+	VUHDO_COLOR = tTarget;
+	VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, tTarget);
 end
 
 
@@ -107,22 +141,21 @@ function VUHDO_colorPickerOnColorSelect(anR, anG, anB)
 		VUHDO_COLOR.B = anB;
 	end
 	VUHDO_lnfColorSwatchInitFromModel(VUHDO_COLOR_SWATCH);
-	VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, VUHDO_COLOR);
+	VUHDO_colorPickerCommit(VUHDO_COLOR);
 end
 
 
 
 --
 function VUHDO_colorPickerOkay()
-	VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, VUHDO_COLOR);
+	VUHDO_colorPickerCommit(VUHDO_COLOR);
 end
 
 
 
 --
 function VUHDO_colorPickerCancel()
-	VUHDO_COLOR = VUHDO_origColor;
-	VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, VUHDO_COLOR);
+	VUHDO_colorPickerCommit(VUHDO_origColor);
 	VUHDO_lnfColorSwatchInitFromModel(VUHDO_COLOR_SWATCH);
 end
 
@@ -155,7 +188,7 @@ function VUHDO_colorPickerOpacityValueChanged(aSlider)
 			VUHDO_COLOR.O = tValue;
 		end
 		VUHDO_lnfColorSwatchInitFromModel(VUHDO_COLOR_SWATCH);
-		VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, VUHDO_COLOR);
+		VUHDO_colorPickerCommit(VUHDO_COLOR);
 	end
 end
 
@@ -212,5 +245,5 @@ function VUHDO_colorPickerPaste(aPanel)
 
 	VUHDO_setPickerColor(aPanel);
 	VUHDO_lnfColorSwatchInitFromModel(VUHDO_COLOR_SWATCH);
-	VUHDO_lnfUpdateVarFromModel(VUHDO_COLOR_SWATCH, VUHDO_COLOR);
+	VUHDO_colorPickerCommit(VUHDO_COLOR);
 end
