@@ -199,12 +199,12 @@
 
       <Frame name="$parentMiscPanel" inherits="VuhDoPanelTemplate">
         <Size>
-          <AbsDimension x="160" y="120" />
+          <AbsDimension x="160" y="148" />
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="65" y="-278" />
+              <AbsDimension x="65" y="-268" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -229,11 +229,27 @@
             </Layers>
           </Frame>
 
+          <CheckButton name="$parentSmoothCheckButton" text="VUHDO_I18N_SMOOTH_BARS" inherits="VuhDoCheckButtonTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT">
+                <Offset>
+                  <AbsDimension x="30" y="-28" />
+                </Offset>
+              </Anchor>
+            </Anchors>
+			      <Scripts>
+			      	<OnLoad>
+			      		VUHDO_lnfSetModel(self, "VUHDO_PANEL_SETUP.#PNUM#.SCALING.isSmooth");
+					      VUHDO_lnfSetTooltip(self, VUHDO_I18N_TT_514);
+			      	</OnLoad>
+      			</Scripts>
+          </CheckButton>
+
           <CheckButton name="$parentDamageFlashCheckButton" text="VUHDO_I18N_DAMAGE_FLASH" inherits="VuhDoCheckButtonTemplate">
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="30" y="-30" />
+                  <AbsDimension x="30" y="-55" />
                 </Offset>
               </Anchor>
             </Anchors>
@@ -252,7 +268,7 @@
             <Anchors>
               <Anchor point="TOPLEFT">
                 <Offset>
-                  <AbsDimension x="13" y="-68" />
+                  <AbsDimension x="13" y="-90" />
                 </Offset>
               </Anchor>
             </Anchors>

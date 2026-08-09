@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (release `ver.2.23.7` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (release `pre-ver.2.23.8` / `ver.2.23.8` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -69,6 +69,12 @@
 <img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
 
 ## История изменений
+
+### ver. 2.23.8 beta (по сравнению с 2.23.7 beta)
+
+- Добавлено: плавная анимация полосы здоровья (опция **Панели → Полосы → «Плавно» / Smooth**, по умолчанию выкл.)
+- Улучшено: при плавной анимации abs/incoming остаются у видимого края HP
+- Улучшено: шкала HP/абсорба учитывает переполнение щита, но не сжимается из‑за большого входящего исцеления
 
 ### ver. 2.23.7 beta (по сравнению с 2.23.6 beta)
 
