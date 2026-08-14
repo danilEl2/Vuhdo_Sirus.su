@@ -1728,7 +1728,8 @@ local VUHDO_DEFAULT_PER_PANEL_SETUP = {
 
 		["isDamFlash"] = true,
 		["damFlashFactor"] = 0.75,
-		["isSmooth"] = false
+		["isSmooth"] = false,
+		["smoothSpeed"] = 2
 	},
 
 	["LIFE_TEXT"] = {

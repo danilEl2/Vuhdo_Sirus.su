@@ -8,11 +8,18 @@
 local pairs = pairs;
 local abs = abs;
 local next = next;
+local floor = floor;
 local GetTime = GetTime;
 
-local VUHDO_SMOOTH_AMOUNT = 0.18;
+-- 1 Slow / 2 Medium / 3 Fast. ~90% travel at 60 FPS: 170 / 115 / 80 ms.
+local VUHDO_SMOOTH_SPEED_AMOUNTS = {
+	[1] = 0.20,
+	[2] = 0.28,
+	[3] = 0.38,
+};
+local VUHDO_SMOOTH_SPEED_DEFAULT = 2;
 local VUHDO_SMOOTH_TARGET_FPS = 60;
-local VUHDO_SMOOTH_MAX_STEP = 0.32;
+local VUHDO_SMOOTH_MAX_STEP = 0.38;
 local VUHDO_SMOOTH_CLOSE_EPS = 0.12;
 
 local sActiveBars = {};
@@ -43,14 +50,45 @@ end
 
 
 
-local function VUHDO_barIsSmoothEnabled(aBar)
+local function VUHDO_barGetScaling(aBar)
 	local tPanel = aBar["vuhdoSmoothPanel"];
 	if (tPanel == nil or VUHDO_PANEL_SETUP == nil) then
-		return false;
+		return nil;
 	end
 	local tSetup = VUHDO_PANEL_SETUP[tPanel];
-	local tScaling = tSetup and tSetup["SCALING"];
+	return tSetup and tSetup["SCALING"];
+end
+
+
+
+local function VUHDO_barIsSmoothEnabled(aBar)
+	local tScaling = VUHDO_barGetScaling(aBar);
 	return tScaling ~= nil and tScaling["isSmooth"];
+end
+
+
+
+local function VUHDO_barGetSmoothAmount(aBar)
+	local tScaling = VUHDO_barGetScaling(aBar);
+	local tSpeed = tScaling and tScaling["smoothSpeed"];
+	if (tSpeed ~= nil) then
+		tSpeed = floor(tSpeed + 0.5);
+	else
+		tSpeed = VUHDO_SMOOTH_SPEED_DEFAULT;
+	end
+	return VUHDO_SMOOTH_SPEED_AMOUNTS[tSpeed] or VUHDO_SMOOTH_SPEED_AMOUNTS[VUHDO_SMOOTH_SPEED_DEFAULT];
+end
+
+
+
+local function VUHDO_smoothStepAmount(aBar, aDelta)
+	local tAmount = VUHDO_barGetSmoothAmount(aBar) * aDelta * VUHDO_SMOOTH_TARGET_FPS;
+	if (tAmount > VUHDO_SMOOTH_MAX_STEP) then
+		return VUHDO_SMOOTH_MAX_STEP;
+	elseif (tAmount < 0) then
+		return 0;
+	end
+	return tAmount;
 end
 
 
@@ -110,14 +148,7 @@ function VUHDO_updateSmoothBars(aTimeDelta)
 		tDelta = 0.08;
 	end
 
-	local tAmount = VUHDO_SMOOTH_AMOUNT * tDelta * VUHDO_SMOOTH_TARGET_FPS;
-	if (tAmount > VUHDO_SMOOTH_MAX_STEP) then
-		tAmount = VUHDO_SMOOTH_MAX_STEP;
-	elseif (tAmount < 0) then
-		tAmount = 0;
-	end
-
-	local tBar, tTarget, tCur, tNew;
+	local tBar, tTarget, tCur, tNew, tAmount;
 
 	for tBar, _ in pairs(sActiveBars) do
 		tTarget = tBar["vuhdoSmoothTarget"];
@@ -128,6 +159,7 @@ function VUHDO_updateSmoothBars(aTimeDelta)
 				sActiveBars[tBar] = nil;
 			end
 		else
+			tAmount = VUHDO_smoothStepAmount(tBar, tDelta);
 			tCur = VUHDO_barGetDisplayed(tBar);
 			tNew = (1 - tAmount) * tCur + tAmount * tTarget;
 
@@ -157,6 +189,7 @@ function VUHDO_updateSmoothBars(aTimeDelta)
 			sActiveAbsorbs[tBar] = nil;
 			VUHDO_smoothPaintAbsorb(tBar);
 		else
+			tAmount = VUHDO_smoothStepAmount(tBar, tDelta);
 			tCur = tBar["vuhdoAbsorbWidthCur"];
 			if (tCur == nil) then
 				tCur = tTarget;

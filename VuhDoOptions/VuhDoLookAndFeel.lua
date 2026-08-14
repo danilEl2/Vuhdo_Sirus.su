@@ -224,8 +224,17 @@ end
 --
 local tText;
 local tUnit;
+local tLabels;
+local tIdx;
 function VUHDO_lnfSliderOnValueChanged(aSlider)
 	if (VUHDO_GLOBAL[aSlider:GetName() .. "SliderValue"] ~= nil) then
+		tLabels = aSlider["vuhdoValueLabels"];
+		if (tLabels ~= nil) then
+			tIdx = floor((VUHDO_GLOBAL[aSlider:GetName() .. "Slider"]:GetValue() or 0) + 0.5);
+			VUHDO_GLOBAL[aSlider:GetName() .. "SliderValue"]:SetText(tLabels[tIdx] or "");
+			return;
+		end
+
 		tText = "" .. floor((VUHDO_GLOBAL[aSlider:GetName() .. "Slider"]:GetValue() + 0.005) * 100) / 100;
 		tUnit = aSlider:GetAttribute("unit");
 		if (tUnit ~= nil) then
