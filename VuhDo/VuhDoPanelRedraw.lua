@@ -362,6 +362,7 @@ local function VUHDO_initAbsorbBar()
 	local tAbsBar = VUHDO_getHealthBar(sButton, 17);
 	VUHDO_initAbsorbBarVisuals(tAbsBar);
 	tAbsBar:SetValueRange(0, 0);
+	sHealthBar["vuhdoAbsorbBar"] = tAbsBar;
 	VUHDO_applyHealBarStackOrder(sButton);
 end
 

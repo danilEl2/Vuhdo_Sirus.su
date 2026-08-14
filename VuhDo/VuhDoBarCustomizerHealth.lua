@@ -163,8 +163,9 @@ local function VUHDO_getIncOverlapStartPct(anIncBar, aStartPct, aHealthPct)
 	return tStart;
 end
 
--- Smooth HP: shift absorb/inc by (displayed HP - target healthPct) so overlays
--- stay on the visible tip while SetValue lerps.
+-- Smooth HP: shift incoming by (displayed HP - target healthPct) so it stays
+-- on the visible tip while SetValue lerps. Absorb is a separate width lerp;
+-- its start is derived each frame from displayed HP (VUHDO_paintAbsorbFromDisplayed).
 local VUHDO_refreshSmoothHealOverlay;
 
 local function VUHDO_getSmoothOverlayDelta(aHlBar, aHealthPct)
@@ -244,17 +245,8 @@ local function VUHDO_paintSmoothHealOverlayRanges(aHlBar, aOverlay, aDelta)
 	end
 
 	local tButton = aOverlay["button"];
-	local tAbsBar = VUHDO_getHealthBar(tButton, 17);
 	local tIncBar = VUHDO_getIncHealBar(tButton);
 	local tOtherIncBar = VUHDO_getOtherIncHealBar(tButton);
-
-	if (aOverlay["hasAbsorb"] and aOverlay["absorbEndPct"] > aOverlay["absorbStartPct"]) then
-		if (aOverlay["absorbFollowHealth"] == false) then
-			VUHDO_setShiftedValueRange(tAbsBar, aOverlay["absorbStartPct"], aOverlay["absorbEndPct"], 0);
-		else
-			VUHDO_setShiftedValueRange(tAbsBar, aOverlay["absorbStartPct"], aOverlay["absorbEndPct"], aDelta);
-		end
-	end
 
 	if (aOverlay["hasOtherInc"] and aOverlay["otherIncEndPct"] > aOverlay["otherIncStartPct"]) then
 		VUHDO_setShiftedValueRange(tOtherIncBar, aOverlay["otherIncStartPct"], aOverlay["otherIncEndPct"], aDelta);
@@ -267,11 +259,10 @@ end
 
 VUHDO_refreshSmoothHealOverlay = function(aHlBar)
 	local tO = aHlBar and aHlBar["vuhdoOverlay"];
-	if (tO == nil) then
-		return;
+	if (tO ~= nil) then
+		VUHDO_paintSmoothHealOverlayRanges(aHlBar, tO, VUHDO_getSmoothOverlayDelta(aHlBar, tO["healthPct"]));
 	end
-
-	VUHDO_paintSmoothHealOverlayRanges(aHlBar, tO, VUHDO_getSmoothOverlayDelta(aHlBar, tO["healthPct"]));
+	VUHDO_paintAbsorbFromDisplayed(aHlBar);
 end
 
 --
@@ -434,6 +425,7 @@ function VUHDO_initAbsorbBarVisuals(anAbsBar)
 		return;
 	end
 
+	anAbsBar["vuhdoAbsorbTexFull"] = nil;
 	VUHDO_applyAbsorbBarTexture(anAbsBar, false);
 	VUHDO_getOrCreateAbsorbOverlay(anAbsBar):Hide();
 	VUHDO_getOrCreateOverAbsorbGlow(anAbsBar):Hide();
@@ -486,6 +478,112 @@ local function VUHDO_setStatusBarColorWithHealthAlpha(aBar, aColor, aHealthBar)
 	end
 end
 
+-- Derive AbsBar range from displayed HP + displayed absorb width.
+-- Incoming still uses overlay target widths (not lerped).
+-- Mode A clips to 100; if clip would kill the bar (HP leaving full overshield),
+-- pin the same width from the right instead of 100–100.
+function VUHDO_paintAbsorbFromDisplayed(aHlBar)
+	if (aHlBar == nil) then
+		return;
+	end
+
+	local tAbsBar = aHlBar["vuhdoAbsorbBar"];
+	local tO = aHlBar["vuhdoOverlay"];
+	if (tAbsBar == nil and tO ~= nil and tO["button"] ~= nil) then
+		tAbsBar = VUHDO_getHealthBar(tO["button"], 17);
+		aHlBar["vuhdoAbsorbBar"] = tAbsBar;
+	end
+
+	if (tAbsBar == nil or tAbsBar == VuhDoDummyStatusBar) then
+		return;
+	end
+
+	local tW = aHlBar["vuhdoAbsorbWidthCur"];
+	if (tW == nil) then
+		tW = aHlBar["vuhdoAbsorbWidthTarget"] or 0;
+	end
+
+	if (tW <= 0.12) then
+		tAbsBar:SetValueRange(0, 0);
+		VUHDO_updateAbsorbOverlay(tAbsBar, false);
+		VUHDO_updateOverAbsorbGlow(tAbsBar, false);
+		return;
+	end
+
+	local tHp = aHlBar["vuhdoSmoothCur"];
+	if (tHp == nil) then
+		tHp = aHlBar["value"] or 0;
+	end
+
+	local tIncW = 0;
+	if (tO ~= nil) then
+		if (tO["hasOtherInc"] and tO["otherIncEndPct"] ~= nil) then
+			tIncW = tO["otherIncEndPct"] - (tO["healthPct"] or 0);
+		elseif (tO["hasInc"] and tO["incEndPct"] ~= nil) then
+			tIncW = tO["incEndPct"] - (tO["healthPct"] or 0);
+		end
+		if (tIncW < 0) then
+			tIncW = 0;
+		end
+	end
+
+	local tIncEnd = tHp + tIncW;
+	local tStart;
+	local tEnd;
+	local tFromRight = false;
+
+	if (tIncEnd >= 100) then
+		tFromRight = true;
+		tEnd = 100;
+		tStart = max(0, 100 - tW);
+	else
+		tStart = tIncEnd;
+		if (tStart < 0) then
+			tStart = 0;
+		end
+		tEnd = tStart + tW;
+		if (tEnd > 100) then
+			tEnd = 100;
+			if (tEnd - tStart <= 0.12) then
+				tFromRight = true;
+				tStart = max(0, 100 - tW);
+			end
+		end
+	end
+
+	if ((not tFromRight) and tIncW > 0) then
+		tBarWidth = tAbsBar:GetWidth();
+		if (tBarWidth > 0) then
+			tStart = tStart - (100 * VUHDO_ABSORB_SEAM_OVERLAP_PX / tBarWidth);
+			if (tStart < 0) then
+				tStart = 0;
+			end
+		end
+	end
+
+	if (tEnd <= tStart) then
+		tAbsBar:SetValueRange(0, 0);
+		VUHDO_updateAbsorbOverlay(tAbsBar, false);
+		VUHDO_updateOverAbsorbGlow(tAbsBar, false);
+		return;
+	end
+
+	tAbsBar:SetValueRange(tStart, tEnd);
+
+	local tIsFull = tHp >= 100;
+	local tHasOver = (tHp + tIncW + tW) >= 100;
+	if (tAbsBar["vuhdoAbsorbTexFull"] ~= tIsFull) then
+		tAbsBar["vuhdoAbsorbTexFull"] = tIsFull;
+		VUHDO_applyAbsorbBarTexture(tAbsBar, tIsFull);
+	elseif (tAbsBar:GetStatusBarTexture() == nil) then
+		VUHDO_applyAbsorbBarTexture(tAbsBar, tIsFull);
+		tAbsBar["vuhdoAbsorbTexFull"] = tIsFull;
+	end
+	VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, VUHDO_getAbsorbBarColor(tIsFull, tHasOver), aHlBar);
+	VUHDO_updateAbsorbOverlay(tAbsBar, not tIsFull, aHlBar);
+	VUHDO_updateOverAbsorbGlow(tAbsBar, tHasOver and tIsFull, aHlBar);
+end
+
 --
 local function VUHDO_getKiloText(aNumber, aSetup)
 	if (abs(aNumber) < 100 or aSetup["LIFE_TEXT"]["verbose"]) then
@@ -507,6 +605,7 @@ local tHealBarLayout = {
 	["otherIncStartPct"] = 0,
 	["otherIncEndPct"] = 0,
 	["amountAbs"] = 0,
+	["absorbWidthPct"] = 0,
 	["hasAbsorb"] = false,
 	["hasOverAbsorb"] = false,
 	["isHealthFull"] = false,
@@ -518,7 +617,8 @@ local tHealBarLayout = {
 --    Иначе full HP + щит ≥ max → HP сжимается, abs-бар максимум ~половина фрейма.
 -- 2) Если absorbStart >= max HP — overlay СПРАВА поверх HP:
 --    absorbEndPct = 100, absorbStartPct = 100 - 100 * absorb / maxHP.
--- 3) Этот overlay не клеить к smooth-lerp (absorbFollowHealth = false).
+-- 3) Ширина щита (absorbWidthPct) lerp'ится отдельно; позиция каждый кадр
+--    от displayed HP. Режим B (справа), если displayed HP+inc >= 100.
 -- 4) Пока HP едет вниз и HP+щит > max: не клампить сдвиг в 100–100.
 --    Overflow справа той же шириной, как overshield.
 local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
@@ -542,6 +642,7 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	end
 
 	tHealBarLayout["amountAbs"] = 0;
+	tHealBarLayout["absorbWidthPct"] = 0;
 	if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 		tHealBarLayout["amountAbs"] = VUHDO_getAbsorbOnUnit(aUnit);
 	end
@@ -592,6 +693,9 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	local tAbsorbStart = tHealth + tEffectiveInc;
 	tHealBarLayout["hasAbsorb"] = tAbs > 0 and anInfo["connected"] and not anInfo["dead"];
 	tHealBarLayout["isHealthFull"] = tHealth >= tMax;
+	if (tAbs > 0) then
+		tHealBarLayout["absorbWidthPct"] = min(100, 100 * tAbs / tMax);
+	end
 
 	local tHealthPlusIncAbs = tHealth + tEffectiveInc + tAbs;
 	tHealBarLayout["hasOverAbsorb"] = tHealBarLayout["hasAbsorb"] and tHealthPlusIncAbs >= tMax;
@@ -615,67 +719,38 @@ local tHlBar;
 local tLayout;
 local tSmoothDelta;
 local tOverlay;
+local tWidthPct;
 local function _VUHDO_applyAbsorbBar(aLayout, tAllButtons)
 	if (aLayout == nil or tAllButtons == nil) then
 		return;
 	end
 
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false or not aLayout["hasAbsorb"]
-		or aLayout["absorbEndPct"] <= aLayout["absorbStartPct"]) then
-		for _, tButton in pairs(tAllButtons) do
-			tAbsBar = VUHDO_getHealthBar(tButton, 17);
-			tHlBar = VUHDO_getHealthBar(tButton, 1);
-			if (VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"]) then
-				tAbsBar:SetValueRange(0, 0);
-			else
-				tAbsBar:SetValue(0);
-			end
-			VUHDO_updateAbsorbOverlay(tAbsBar, false);
-			VUHDO_updateOverAbsorbGlow(tAbsBar, false);
-
-			tOverlay = tHlBar and tHlBar["vuhdoOverlay"];
-			if (tOverlay ~= nil) then
-				tOverlay["hasAbsorb"] = false;
-			end
-		end
-		return;
+	tWidthPct = aLayout["absorbWidthPct"] or 0;
+	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false) then
+		tWidthPct = 0;
+	elseif (not aLayout["hasAbsorb"]) then
+		tWidthPct = 0;
 	end
-
-	tAbsColor = VUHDO_getAbsorbBarColor(aLayout["isHealthFull"], aLayout["hasOverAbsorb"]);
 
 	for _, tButton in pairs(tAllButtons) do
 		tAbsBar = VUHDO_getHealthBar(tButton, 17);
 		tHlBar = VUHDO_getHealthBar(tButton, 1);
-		VUHDO_applyAbsorbBarTexture(tAbsBar, aLayout["isHealthFull"]);
+		if (tHlBar ~= nil and tHlBar ~= VuhDoDummyStatusBar) then
+			tHlBar["vuhdoAbsorbBar"] = tAbsBar;
+			VUHDO_ensureSmoothHealOverlay(tHlBar, tButton, aLayout["healthPct"]);
+			tOverlay = tHlBar["vuhdoOverlay"];
+			if (tOverlay ~= nil) then
+				tOverlay["hasAbsorb"] = tWidthPct > 0
+					or (tHlBar["vuhdoAbsorbWidthCur"] or 0) > 0.12;
+			end
 
-		tAbsStart = aLayout["absorbStartPct"];
-		if (aLayout["incEndPct"] > aLayout["incStartPct"] and not aLayout["absorbOverlayFromRight"]) then
-			tBarWidth = tAbsBar:GetWidth();
-			if (tBarWidth > 0) then
-				tAbsStart = tAbsStart - (100 * VUHDO_ABSORB_SEAM_OVERLAP_PX / tBarWidth);
-				if (tAbsStart < 0) then
-					tAbsStart = 0;
-				end
+			if (VUHDO_CONFIG["SHOW_ABSORBS"] == false) then
+				VUHDO_setAbsorbWidthInstant(tHlBar, 0);
+			else
+				VUHDO_setAbsorbWidthSmoothed(tHlBar, tWidthPct);
+				VUHDO_paintAbsorbFromDisplayed(tHlBar);
 			end
 		end
-
-		tSmoothDelta = VUHDO_ensureSmoothHealOverlay(tHlBar, tButton, aLayout["healthPct"]);
-		tOverlay = tHlBar and tHlBar["vuhdoOverlay"];
-		if (tOverlay ~= nil) then
-			tOverlay["hasAbsorb"] = true;
-			tOverlay["absorbStartPct"] = tAbsStart;
-			tOverlay["absorbEndPct"] = aLayout["absorbEndPct"];
-			tOverlay["absorbFollowHealth"] = not aLayout["absorbOverlayFromRight"];
-		end
-
-		if (aLayout["absorbOverlayFromRight"]) then
-			VUHDO_setShiftedValueRange(tAbsBar, tAbsStart, aLayout["absorbEndPct"], 0);
-		else
-			VUHDO_setShiftedValueRange(tAbsBar, tAbsStart, aLayout["absorbEndPct"], tSmoothDelta);
-		end
-		VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, tAbsColor, tHlBar);
-		VUHDO_updateAbsorbOverlay(tAbsBar, not aLayout["isHealthFull"], tHlBar);
-		VUHDO_updateOverAbsorbGlow(tAbsBar, aLayout["hasOverAbsorb"] and aLayout["isHealthFull"], tHlBar);
 	end
 end
 
@@ -725,11 +800,12 @@ local function _VUHDO_updateIncHeal(aUnit)
 			VUHDO_clearIncBar(VUHDO_getIncHealBar(tButton));
 			VUHDO_clearIncBar(VUHDO_getOtherIncHealBar(tButton));
 			tHlBar = VUHDO_getHealthBar(tButton, 1);
-			tHlBar["vuhdoOverlay"] = nil;
-			tHlBar["vuhdoOnSmoothStep"] = nil;
 			if (not tInfo["connected"] or tInfo["dead"]) then
 				VUHDO_setHealthBarValueInstant(tHlBar, 100);
 			else
+				VUHDO_setAbsorbWidthInstant(tHlBar, 0);
+				tHlBar["vuhdoOverlay"] = nil;
+				tHlBar["vuhdoOnSmoothStep"] = nil;
 				tHlBar:SetValue(VUHDO_getUnitHealthPercent(tInfo));
 			end
 			VUHDO_refreshHlBarBorderForButton(tButton, aUnit);

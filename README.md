@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta` / `v2.23.8` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.2` / `v2.23.8` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -69,6 +69,12 @@
 <img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
 
 ## История изменений
+
+### v2.23.8-beta.2 (по сравнению с v2.23.8-beta)
+
+- Улучшено: ширина abs-бара плавно lerp'ится отдельно от HP
+- Улучшено: позиция щита каждый кадр считается от displayed HP (входящее без lerp)
+- Исправлено: при уходе с полного HP overshield не схлопывается в 100–100, а пинится справа той же шириной
 
 ### v2.23.8-beta (по сравнению с v2.23.7-beta)
 

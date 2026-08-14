@@ -16,6 +16,7 @@ local VUHDO_SMOOTH_MAX_STEP = 0.32;
 local VUHDO_SMOOTH_CLOSE_EPS = 0.12;
 
 local sActiveBars = {};
+local sActiveAbsorbs = {};
 local sLastTime = GetTime();
 local sDriver = CreateFrame("Frame");
 local VUHDO_barSetSmoothedValue;
@@ -83,9 +84,17 @@ end
 
 
 
+local function VUHDO_smoothPaintAbsorb(aHlBar)
+	if (VUHDO_paintAbsorbFromDisplayed ~= nil) then
+		VUHDO_paintAbsorbFromDisplayed(aHlBar);
+	end
+end
+
+
+
 --
 function VUHDO_updateSmoothBars(aTimeDelta)
-	if (not next(sActiveBars)) then
+	if (not next(sActiveBars) and not next(sActiveAbsorbs)) then
 		sLastTime = GetTime();
 		return;
 	end
@@ -132,10 +141,35 @@ function VUHDO_updateSmoothBars(aTimeDelta)
 			if (tBar["SetValueInstant"] ~= nil) then
 				tBar["SetValueInstant"](tBar, tNew);
 			end
+		end
 
-			if (tBar["vuhdoOnSmoothStep"] ~= nil) then
-				tBar["vuhdoOnSmoothStep"](tBar);
+		if (tBar["vuhdoOnSmoothStep"] ~= nil) then
+			tBar["vuhdoOnSmoothStep"](tBar);
+		end
+	end
+
+	for tBar, _ in pairs(sActiveAbsorbs) do
+		tTarget = tBar["vuhdoAbsorbWidthTarget"];
+		if (tTarget == nil or not VUHDO_barIsSmoothEnabled(tBar)) then
+			if (tTarget ~= nil) then
+				tBar["vuhdoAbsorbWidthCur"] = tTarget;
 			end
+			sActiveAbsorbs[tBar] = nil;
+			VUHDO_smoothPaintAbsorb(tBar);
+		else
+			tCur = tBar["vuhdoAbsorbWidthCur"];
+			if (tCur == nil) then
+				tCur = tTarget;
+			end
+			tNew = (1 - tAmount) * tCur + tAmount * tTarget;
+
+			if (abs(tNew - tTarget) <= VUHDO_SMOOTH_CLOSE_EPS) then
+				tNew = tTarget;
+				sActiveAbsorbs[tBar] = nil;
+			end
+
+			tBar["vuhdoAbsorbWidthCur"] = tNew;
+			VUHDO_smoothPaintAbsorb(tBar);
 		end
 	end
 end
@@ -149,6 +183,53 @@ end);
 
 
 --
+function VUHDO_setAbsorbWidthInstant(aHlBar, aWidthPct)
+	if (aHlBar == nil or aHlBar == VuhDoDummyStatusBar) then
+		return;
+	end
+
+	aWidthPct = VUHDO_smoothClampValue(aWidthPct);
+	sActiveAbsorbs[aHlBar] = nil;
+	aHlBar["vuhdoAbsorbWidthCur"] = aWidthPct;
+	aHlBar["vuhdoAbsorbWidthTarget"] = aWidthPct;
+	VUHDO_smoothPaintAbsorb(aHlBar);
+end
+
+
+
+--
+function VUHDO_setAbsorbWidthSmoothed(aHlBar, aWidthPct)
+	if (aHlBar == nil or aHlBar == VuhDoDummyStatusBar) then
+		return;
+	end
+
+	aWidthPct = VUHDO_smoothClampValue(aWidthPct);
+
+	if (not VUHDO_barIsSmoothEnabled(aHlBar)) then
+		VUHDO_setAbsorbWidthInstant(aHlBar, aWidthPct);
+		return;
+	end
+
+	if (aHlBar["vuhdoAbsorbWidthCur"] == nil) then
+		aHlBar["vuhdoAbsorbWidthCur"] = aWidthPct;
+		aHlBar["vuhdoAbsorbWidthTarget"] = aWidthPct;
+		sActiveAbsorbs[aHlBar] = nil;
+		return;
+	end
+
+	aHlBar["vuhdoAbsorbWidthTarget"] = aWidthPct;
+	if (abs(aHlBar["vuhdoAbsorbWidthCur"] - aWidthPct) <= VUHDO_SMOOTH_CLOSE_EPS) then
+		aHlBar["vuhdoAbsorbWidthCur"] = aWidthPct;
+		sActiveAbsorbs[aHlBar] = nil;
+		return;
+	end
+
+	sActiveAbsorbs[aHlBar] = true;
+end
+
+
+
+--
 function VUHDO_setHealthBarValueInstant(aBar, aValue)
 	if (aBar == nil or aBar == VuhDoDummyStatusBar) then
 		return;
@@ -158,6 +239,8 @@ function VUHDO_setHealthBarValueInstant(aBar, aValue)
 	sActiveBars[aBar] = nil;
 	aBar["vuhdoSmoothCur"] = aValue;
 	aBar["vuhdoSmoothTarget"] = aValue;
+
+	VUHDO_setAbsorbWidthInstant(aBar, 0);
 
 	aBar["vuhdoOverlay"] = nil;
 	aBar["vuhdoOnSmoothStep"] = nil;
@@ -180,6 +263,9 @@ function VUHDO_setHealthBarSmooth(aBar, aPanelNum)
 	aBar["vuhdoSmoothPanel"] = aPanelNum;
 	aBar["vuhdoOverlay"] = nil;
 	aBar["vuhdoOnSmoothStep"] = nil;
+	sActiveAbsorbs[aBar] = nil;
+	aBar["vuhdoAbsorbWidthCur"] = nil;
+	aBar["vuhdoAbsorbWidthTarget"] = nil;
 
 	if (aBar["SetValue"] ~= VUHDO_barSetSmoothedValue) then
 		if (aBar["SetValueInstant"] == nil) then
