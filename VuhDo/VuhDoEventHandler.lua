@@ -1087,9 +1087,6 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 		VUHDO_DEBUFF_ANIMATION = VUHDO_DEBUFF_ANIMATION - aTimeDelta;
 	end
 
-	-- Smooth health bar lerp (needs high frequency)
-	VUHDO_updateSmoothBars(aTimeDelta);
-
 	tNow = GetTime();
 
 	-- Update GCD-Bar

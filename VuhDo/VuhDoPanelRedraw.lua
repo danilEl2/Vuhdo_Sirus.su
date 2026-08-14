@@ -1081,15 +1081,15 @@ function VUHDO_initHealButton(aButton, aPanelNum)
 	VUHDO_getHealthBar(aButton, 7):SetOrientation(tOrientation);
 
 	VUHDO_initButtonStatics(aButton, aPanelNum);
-	VUHDO_setHealthBarSmooth(sHealthBar, sBarScaling["isSmooth"]);
+	VUHDO_setHealthBarSmooth(sHealthBar, aPanelNum);
 	VUHDO_initAggroTexture();
 	VUHDO_initManaBar(sButton, VUHDO_getHealthBar(sButton, 2), sBarScaling["barWidth"], false);
 	VUHDO_initBackgroundBar(VUHDO_getHealthBar(sButton, 3));
 	VUHDO_initTargetBar();
 	VUHDO_initTotBar();
-	-- After init SetValue(100): wrap Target/ToT HP with the same panel Smooth flag.
-	VUHDO_setHealthBarSmooth(VUHDO_getHealthBar(sButton, 5), sBarScaling["isSmooth"]);
-	VUHDO_setHealthBarSmooth(VUHDO_getHealthBar(sButton, 14), sBarScaling["isSmooth"]);
+	-- After init SetValue(100): wrap Target/ToT HP (isSmooth читается на лету).
+	VUHDO_setHealthBarSmooth(VUHDO_getHealthBar(sButton, 5), aPanelNum);
+	VUHDO_setHealthBarSmooth(VUHDO_getHealthBar(sButton, 14), aPanelNum);
 	VUHDO_initIncomingBar();
 	VUHDO_initAbsorbBar();
 	VUHDO_initThreatBar();
