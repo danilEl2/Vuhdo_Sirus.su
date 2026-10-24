@@ -428,14 +428,13 @@ local VUHDO_STATUSBAR_RIGHT_TO_LEFT = 2;
 local VUHDO_STATUSBAR_BOTTOM_TO_TOP = 3;
 local VUHDO_STATUSBAR_TOP_TO_BOTTOM = 4;
 local VUHDO_STATUSBAR_TEX_EPS = 0.002;
+-- Locals for SetValue / SetValueRange closures (must not write _G on every OnUpdate tick).
+local tTexMin, tTexMax, tValue, tWidth, tHeight;
 function VUHDO_repairStatusbar(tBar)
 	tBar["texture"] = tBar:CreateTexture(nil, "ARTWORK");
 	tBar["txOrient"] = VUHDO_STATUSBAR_LEFT_TO_RIGHT;
 	tBar["value"] = 0;
 	tBar["isInverted"] = false;
-	tBar["tValue"] = nil;
-	tBar["tWidth"] = nil;
-	tBar["tHeight"] = nil;
 
 	tBar["SetStatusBarColor"] = function(self, r, g, b, a)
 		self["texture"]:SetVertexColor(r, g, b, a);

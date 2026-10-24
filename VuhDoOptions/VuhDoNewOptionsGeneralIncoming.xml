@@ -561,7 +561,7 @@
         </Frames>
       </Frame>
 	    <Scripts>
-    	  <OnHide>VUHDO_setLhcEnabled(); VUHDO_setAbsorbEnabled();</OnHide>
+    	  <OnHide>VUHDO_healCommAdapterInitBurst(); VUHDO_setLhcEnabled(); VUHDO_setAbsorbEnabled();</OnHide>
     	</Scripts>
     </Frames>
   </Frame>

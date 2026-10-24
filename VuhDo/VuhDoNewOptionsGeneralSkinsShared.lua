@@ -425,6 +425,20 @@ function VUHDO_loadProfile(aName, aSkipSpellBindings)
 	VUHDO_initAllEventBouquets();
 	VUHDO_initBuffs();
 	VUHDO_initDebuffs();
+	-- Re-bind absorb / heal-comm / shield adapters to the loaded profile flags
+	-- (SHOW_ABSORBS, SHOW_INCOMING, …) without requiring /reload or reopening Options.
+	if (VUHDO_healCommAdapterInitBurst ~= nil) then
+		VUHDO_healCommAdapterInitBurst();
+	end
+	if (VUHDO_setLhcEnabled ~= nil) then
+		VUHDO_setLhcEnabled();
+	end
+	if (VUHDO_setAbsorbEnabled ~= nil) then
+		VUHDO_setAbsorbEnabled();
+	end
+	if (VUHDO_setShieldCommEnabled ~= nil) then
+		VUHDO_setShieldCommEnabled();
+	end
 	VUHDO_reloadUI();
 	VUHDO_resetTooltip();
 	VUHDO_initBlizzFrames();

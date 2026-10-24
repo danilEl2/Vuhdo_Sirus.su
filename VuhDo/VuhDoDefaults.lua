@@ -573,7 +573,7 @@ local VUHDO_DEFAULT_CONFIG = {
 	["SHOW_ABSORBS"] = false,
 	["ABSORB_TEXTURE"] = "Blizzard - Shield Fill",
 	["ABSORB_TEXTURE_FULL"] = "Blizzard - Shield Fill",
-	["ABSORB_REFRESH_MS"] = 1500,
+	["ABSORB_REFRESH_MS"] = 3000,
 	["ABSORB_OVER_GLOW"] = true,
 	["ABSORB_SHOW_MY_INC"] = false,
 	["SHOW_OVERHEAL"] = true,
@@ -819,8 +819,15 @@ function VUHDO_loadDefaultConfig()
 
 	VUHDO_CONFIG = VUHDO_ensureSanity("VUHDO_CONFIG", VUHDO_CONFIG, VUHDO_DEFAULT_CONFIG);
 
-	if (type(UnitGetTotalAbsorbs) == "function" and tShowAbsorbsUnset) then
+	-- Use loader flag, not _G.UnitGetTotalAbsorbs (must not auto-enable on fake global).
+	if (VUHDO_IS_NATIVE_ABSORBS and tShowAbsorbsUnset) then
 		VUHDO_CONFIG["SHOW_ABSORBS"] = true;
+	end
+
+	-- One-shot: previous default was 1500; bump saved copies of that default to 3000.
+	-- Users who intentionally want 1500 can set the slider again after this load.
+	if (VUHDO_CONFIG["ABSORB_REFRESH_MS"] == 1500) then
+		VUHDO_CONFIG["ABSORB_REFRESH_MS"] = 3000;
 	end
 
 	if (VUHDO_CONFIG["CUSTOM_DEBUFF"].version == nil or VUHDO_CONFIG["CUSTOM_DEBUFF"].version < 2) then

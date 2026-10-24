@@ -300,8 +300,51 @@ local tClassId;
 local tInfo;
 local tNewHealth;
 local tNewMax;
+local tOldHealth;
+local tOldMax;
+local tExpectedHealth;
 local tName, tRealm;
 local tIsDcChange;
+
+-- Max-HP aura race: UNIT_MAXHEALTH often arrives before current HP is topped up
+-- by the same delta. Return expected current HP, or nil if no stabilization needed.
+local function VUHDO_getStabilizedHealthAfterMaxUp(anInfo, aNewMax, aNewHealth, anIsDead)
+	if (anIsDead or anInfo == nil or aNewMax == nil or aNewHealth == nil) then
+		return nil;
+	end
+
+	tOldMax = anInfo["healthmax"] or 0;
+	tOldHealth = anInfo["health"] or 0;
+	if (tOldMax <= 0 or aNewMax <= tOldMax) then
+		return nil;
+	end
+
+	-- Current HP not yet raised with the max (still at/near previous value).
+	if (aNewHealth >= aNewMax or aNewHealth > tOldHealth) then
+		return nil;
+	end
+
+	if (aNewHealth < (tOldHealth - 1)) then
+		return nil;
+	end
+
+	-- Full: expect top-up to new max. Missing: expect +same delta as max.
+	if (tOldHealth >= (tOldMax - 1)) then
+		tExpectedHealth = aNewMax;
+	else
+		tExpectedHealth = tOldHealth + (aNewMax - tOldMax);
+		if (tExpectedHealth > aNewMax) then
+			tExpectedHealth = aNewMax;
+		end
+	end
+
+	if (tExpectedHealth <= aNewHealth) then
+		return nil;
+	end
+
+	return tExpectedHealth;
+end
+
 function VUHDO_setHealth(aUnit, aMode)
 
 	tInfo = VUHDO_RAID[aUnit];
@@ -413,29 +456,67 @@ function VUHDO_setHealth(aUnit, aMode)
 				tNewHealth = UnitHealth(aUnit);
 				tNewMax = UnitHealthMax(aUnit);
 
+				-- Max-HP buff race (full overshield OR missing-HP textured absorb):
+				-- stabilize current HP for ~0.2s so absorb tip/overlay does not jump.
+				-- Pending hold lives only here (not in layout) so absorb-before-UNIT_HEALTH
+				-- cannot rewrite health and break lifeLossPerc / emergency.
 				if (tNewMax > 0 and tNewMax ~= tInfo["healthmax"]) then
+					if (not tIsDead and (tInfo["health"] or 0) > 0) then
+						tInfo["lifeLossPerc"] = tNewHealth / tInfo["health"];
+					end
+					tExpectedHealth = VUHDO_getStabilizedHealthAfterMaxUp(tInfo, tNewMax, tNewHealth, tIsDead);
 					tInfo["healthmax"] = tNewMax;
 					tInfo["sortMaxHp"] = VUHDO_getUnitSortMaxHp(aUnit);
+					if (tExpectedHealth ~= nil) then
+						tInfo["health"] = tExpectedHealth;
+						tInfo["vuhdoMaxHpFillHealth"] = tExpectedHealth;
+						tInfo["vuhdoMaxHpFillPending"] = GetTime() + 0.2;
+					else
+						tInfo["health"] = tNewHealth;
+						tInfo["vuhdoMaxHpFillHealth"] = nil;
+						tInfo["vuhdoMaxHpFillPending"] = nil;
+					end
+				elseif (tInfo["vuhdoMaxHpFillPending"] ~= nil
+						and tInfo["vuhdoMaxHpFillHealth"] ~= nil
+						and tNewHealth < tInfo["vuhdoMaxHpFillHealth"]
+						and GetTime() < tInfo["vuhdoMaxHpFillPending"]) then
+					-- Still settling after max-up: keep stabilized HP, no false damage flash.
+					tInfo["lifeLossPerc"] = nil;
+				else
+					if (not tIsDead and (tInfo["health"] or 0) > 0) then
+						tInfo["lifeLossPerc"] = tNewHealth / tInfo["health"];
+					end
+					tInfo["health"] = tNewHealth;
+					tInfo["vuhdoMaxHpFillHealth"] = nil;
+					tInfo["vuhdoMaxHpFillPending"] = nil;
 				end
-
-				if (not tIsDead) then
-					tInfo["lifeLossPerc"] = tNewHealth / tInfo["health"];
-				end
-
-				tInfo["health"] = tNewHealth;
 
 				if (tInfo["dead"] ~= tIsDead) then
 					if (tInfo["dead"] and not tIsDead) then
 						tInfo["healthmax"] = UnitHealthMax(aUnit);
 					end
 					tInfo["dead"] = tIsDead;
+					tInfo["vuhdoMaxHpFillHealth"] = nil;
+					tInfo["vuhdoMaxHpFillPending"] = nil;
 					VUHDO_updateHealthBarsFor(aUnit, 10); -- VUHDO_UPDATE_ALIVE
 					VUHDO_updateBouquetsForEvent(aUnit, 10); -- VUHDO_UPDATE_ALIVE
 				end
 
 			elseif(3 == aMode) then -- VUHDO_UPDATE_HEALTH_MAX
+				tNewHealth = UnitHealth(aUnit);
+				tNewMax = UnitHealthMax(aUnit);
 				tInfo["dead"] = tIsDead;
-				tInfo["healthmax"] = UnitHealthMax(aUnit);
+				tExpectedHealth = VUHDO_getStabilizedHealthAfterMaxUp(tInfo, tNewMax, tNewHealth, tIsDead);
+				tInfo["healthmax"] = tNewMax;
+				if (tExpectedHealth ~= nil) then
+					tInfo["health"] = tExpectedHealth;
+					tInfo["vuhdoMaxHpFillHealth"] = tExpectedHealth;
+					tInfo["vuhdoMaxHpFillPending"] = GetTime() + 0.2;
+				else
+					tInfo["health"] = tNewHealth;
+					tInfo["vuhdoMaxHpFillHealth"] = nil;
+					tInfo["vuhdoMaxHpFillPending"] = nil;
+				end
 				tInfo["sortMaxHp"] = VUHDO_getUnitSortMaxHp(aUnit);
 
 			elseif(6 == aMode) then -- VUHDO_UPDATE_AFK

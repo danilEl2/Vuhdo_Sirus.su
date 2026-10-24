@@ -7,8 +7,10 @@ local pairs = pairs;
 
 local VUHDO_CONFIG;
 local VUHDO_RAID_GUID_NAMES;
+local VUHDO_RAID_NAMES;
 
 local VUHDO_updateHealthBarsFor;
+local VUHDO_markAbsorbDirty;
 
 local GetTime = GetTime;
 local UnitGUID = UnitGUID;
@@ -20,7 +22,9 @@ local sPlayerGUID;
 function VUHDO_healCommAdapterInitBurst()
 	VUHDO_CONFIG = VUHDO_GLOBAL["VUHDO_CONFIG"];
 	VUHDO_RAID_GUID_NAMES = VUHDO_GLOBAL["VUHDO_RAID_GUID_NAMES"];
+	VUHDO_RAID_NAMES = VUHDO_GLOBAL["VUHDO_RAID_NAMES"];
 	VUHDO_updateHealthBarsFor = VUHDO_GLOBAL["VUHDO_updateHealthBarsFor"];
+	VUHDO_markAbsorbDirty = VUHDO_GLOBAL["VUHDO_markAbsorbDirty"];
 	sIsCasted = VUHDO_CONFIG["SHOW_INC_CASTED"];
 	sIsChannelled = VUHDO_CONFIG["SHOW_INC_CHANNELLED"];
 	sIsHots = VUHDO_CONFIG["SHOW_INC_HOTS"];
@@ -143,12 +147,28 @@ end
 
 --
 local function VUHDO_setIncHeal(aTargetName, anOwnAmount, anOthersAmount, anEndTime)
+	local tUnit;
+
 	VUHDO_INC_HEAL_OWN[aTargetName] = anOwnAmount;
 	VUHDO_INC_HEAL_OTHERS[aTargetName] = anOthersAmount;
 	if (anEndTime ~= nil and (VUHDO_INC_END[aTargetName] == nil or VUHDO_INC_END[aTargetName] < anEndTime)) then
 		VUHDO_INC_END[aTargetName] = anEndTime + 1;
 	end
-	VUHDO_updateHealthBarsFor(VUHDO_RAID_NAMES[aTargetName], 9); -- VUHDO_UPDATE_INC
+
+	if (VUHDO_RAID_NAMES == nil) then
+		return;
+	end
+	tUnit = VUHDO_RAID_NAMES[aTargetName];
+	if (tUnit == nil) then
+		return;
+	end
+
+	-- Coalesce with absorb dirty queue (flush ≤50 ms from OnUpdate).
+	if (VUHDO_markAbsorbDirty ~= nil) then
+		VUHDO_markAbsorbDirty(tUnit);
+	elseif (VUHDO_updateHealthBarsFor ~= nil) then
+		VUHDO_updateHealthBarsFor(tUnit, 9); -- VUHDO_UPDATE_INC
+	end
 end
 
 --

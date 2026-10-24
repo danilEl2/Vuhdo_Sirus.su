@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: VuhDo - Options Sirus beta
 ## Author: EllyaS
-## Version: 2.23.8 beta 2
+## Version: 2.23.8 beta 3
 ## Notes: VuhDo Options
 ## Notes-ruRU: Настройки VuhDo
 ## SavedVariables: VUHDO_OPTIONS_SETTINGS
@@ -17,7 +17,6 @@ VuhDoNewOptionsGeneralBasic.xml
 VuhDoNewOptionsGeneralBouquet.xml
 VuhDoNewOptionsGeneralScan.xml
 VuhDoNewOptionsGeneralIncoming.xml
-VuhDoNewOptionsGeneralSkins.xml
 VuhDoNewOptionsGeneralThreat.xml
 VuhDoNewOptionsGeneralMisc.xml
 VuhDoNewOptionsGeneralCluster.xml

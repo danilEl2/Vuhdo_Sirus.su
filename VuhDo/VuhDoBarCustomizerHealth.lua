@@ -10,8 +10,6 @@ local VUHDO_getIncHealOnUnit;
 local VUHDO_getOwnIncHealOnUnit;
 local VUHDO_getOthersIncHealOnUnit;
 local VUHDO_getAbsorbOnUnit;
-local VUHDO_getUnitEffectiveHealth;
-local VUHDO_getUnitHealthPlusAbsorbPercent;
 local VUHDO_getDiffColor;
 local VUHDO_isPanelVisible;
 local VUHDO_updateManaBars;
@@ -79,8 +77,6 @@ function VUHDO_customHealthInitBurst()
 	VUHDO_getOwnIncHealOnUnit = VUHDO_GLOBAL["VUHDO_getOwnIncHealOnUnit"];
 	VUHDO_getOthersIncHealOnUnit = VUHDO_GLOBAL["VUHDO_getOthersIncHealOnUnit"];
 	VUHDO_getAbsorbOnUnit = VUHDO_GLOBAL["VUHDO_getAbsorbOnUnit"];
-	VUHDO_getUnitEffectiveHealth = VUHDO_GLOBAL["VUHDO_getUnitEffectiveHealth"];
-	VUHDO_getUnitHealthPlusAbsorbPercent = VUHDO_GLOBAL["VUHDO_getUnitHealthPlusAbsorbPercent"];
 	VUHDO_getDiffColor = VUHDO_GLOBAL["VUHDO_getDiffColor"];
 	VUHDO_isPanelVisible = VUHDO_GLOBAL["VUHDO_isPanelVisible"];
 	VUHDO_updateManaBars = VUHDO_GLOBAL["VUHDO_updateManaBars"];
@@ -329,6 +325,7 @@ end
 
 --
 local tAbsBarTex;
+local tHlO;
 local function VUHDO_updateAbsorbOverlay(anAbsBar, aShow, aHealthBar)
 	local tOverlay = anAbsBar["vuhdoAbsorbOverlay"];
 
@@ -372,10 +369,15 @@ local function VUHDO_getOrCreateOverAbsorbGlow(anAbsBar)
 end
 
 --
+-- Glow at the absorb tip. Respects abs-bar txOrient (1 L→R, 2 R→L, 3 B→T, 4 T→B)
+-- and HEALTH_BAR.invertGrowth. Horizontal: LEFT/RIGHT; vertical: TOP/BOTTOM.
 local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 	local tGlow = anAbsBar["vuhdoOverAbsorbGlow"];
 	local tAnchor;
 	local tHlTex;
+	local tOrient;
+	local tInvert;
+	local tTipAtStart;
 
 	if (tGlow == nil) then
 		return;
@@ -400,14 +402,40 @@ local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 		return;
 	end
 
-	tGlow:SetWidth(16);
-	tGlow:SetHeight(anAbsBar:GetHeight() + 5);
+	tOrient = anAbsBar["txOrient"] or 1;
+	tInvert = VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"];
 	tGlow:ClearAllPoints();
 
-	if (VUHDO_INDICATOR_CONFIG["CUSTOM"]["HEALTH_BAR"]["invertGrowth"]) then
-		tGlow:SetPoint("RIGHT", tAnchor, "LEFT", -7, 0);
+	if (tOrient == 3 or tOrient == 4) then
+		-- Vertical bars: glow on the growth tip (top or bottom).
+		-- Rotate Shield-Overshield UVs 90° so the strip runs along the tip edge.
+		tGlow:SetHeight(16);
+		tGlow:SetWidth(anAbsBar:GetWidth() + 5);
+		tGlow:SetTexCoord(0, 1, 1, 1, 0, 0, 1, 0);
+		tTipAtStart = (tOrient == 4);
+		if (tInvert) then
+			tTipAtStart = not tTipAtStart;
+		end
+		if (tTipAtStart) then
+			tGlow:SetPoint("TOP", tAnchor, "BOTTOM", 0, 7);
+		else
+			tGlow:SetPoint("BOTTOM", tAnchor, "TOP", 0, -7);
+		end
 	else
-		tGlow:SetPoint("LEFT", tAnchor, "RIGHT", -7, 0);
+		-- Horizontal bars: glow on left or right tip.
+		tGlow:SetWidth(16);
+		tGlow:SetHeight(anAbsBar:GetHeight() + 5);
+		tGlow:SetTexCoord(0, 1, 0, 1);
+		tTipAtStart = (tOrient == 2);
+		if (tInvert) then
+			tTipAtStart = not tTipAtStart;
+		end
+		if (tTipAtStart) then
+			-- Mirror of RIGHT tip: +7 pulls the 16px strip onto the bar edge.
+			tGlow:SetPoint("RIGHT", tAnchor, "LEFT", 7, 0);
+		else
+			tGlow:SetPoint("LEFT", tAnchor, "RIGHT", -7, 0);
+		end
 	end
 
 	if (aHealthBar ~= nil) then
@@ -436,7 +464,8 @@ local function VUHDO_getUnitHealthModiPercent(anInfo, aModifier)
 	if (anInfo["healthmax"] == 0) then
 		return 0;
 	else
-		return 100 * (anInfo["health"] + aModifier) / anInfo["healthmax"];
+		-- Clamp: health + absorb (+inc) must not show >100% in life text.
+		return min(100, 100 * (anInfo["health"] + aModifier) / anInfo["healthmax"]);
 	end
 end
 
@@ -552,7 +581,12 @@ function VUHDO_paintAbsorbFromDisplayed(aHlBar)
 	end
 
 	if ((not tFromRight) and tIncW > 0) then
-		tBarWidth = tAbsBar:GetWidth();
+		local tOrient = tAbsBar["txOrient"] or 1;
+		if (tOrient == 3 or tOrient == 4) then
+			tBarWidth = tAbsBar:GetHeight();
+		else
+			tBarWidth = tAbsBar:GetWidth();
+		end
 		if (tBarWidth > 0) then
 			tStart = tStart - (100 * VUHDO_ABSORB_SEAM_OVERLAP_PX / tBarWidth);
 			if (tStart < 0) then
@@ -571,7 +605,8 @@ function VUHDO_paintAbsorbFromDisplayed(aHlBar)
 	tAbsBar:SetValueRange(tStart, tEnd);
 
 	local tIsFull = tHp >= 100;
-	local tHasOver = (tHp + tIncW + tW) >= 100;
+	-- Strict >: shield that only fills to 100% is not over-absorb.
+	local tHasOver = (tHp + tIncW + tW) > 100;
 	if (tAbsBar["vuhdoAbsorbTexFull"] ~= tIsFull) then
 		tAbsBar["vuhdoAbsorbTexFull"] = tIsFull;
 		VUHDO_applyAbsorbBarTexture(tAbsBar, tIsFull);
@@ -581,7 +616,8 @@ function VUHDO_paintAbsorbFromDisplayed(aHlBar)
 	end
 	VUHDO_setStatusBarColorWithHealthAlpha(tAbsBar, VUHDO_getAbsorbBarColor(tIsFull, tHasOver), aHlBar);
 	VUHDO_updateAbsorbOverlay(tAbsBar, not tIsFull, aHlBar);
-	VUHDO_updateOverAbsorbGlow(tAbsBar, tHasOver and tIsFull, aHlBar);
+	-- Glow on over-absorb even when HP is not full (TT_510: edge glow when shield exceeds max HP).
+	VUHDO_updateOverAbsorbGlow(tAbsBar, tHasOver, aHlBar);
 end
 
 --
@@ -621,23 +657,18 @@ local tHealBarLayout = {
 --    от displayed HP. Режим B (справа), если displayed HP+inc >= 100.
 -- 4) Пока HP едет вниз и HP+щит > max: не клампить сдвиг в 100–100.
 --    Overflow справа той же шириной, как overshield.
+-- Pure layout: reads anInfo + absorb/inc amounts, writes only into tHealBarLayout.
+-- health / healthmax / vuhdoMaxHpFill* are owned by VUHDO_setHealth so absorb /
+-- heal-comm / bouquet paths cannot clobber the model before UNIT_HEALTH (damage
+-- flash lifeLossPerc and emergency sort stay correct).
 local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	if (anInfo == nil) then
 		return nil;
 	end
 
-	if (aUnit ~= nil and UnitExists(aUnit)) then
-		local tLiveMax = UnitHealthMax(aUnit);
-		local tLiveHealth = UnitHealth(aUnit);
-		if (tLiveMax > 0 and tLiveMax ~= anInfo["healthmax"]) then
-			anInfo["healthmax"] = tLiveMax;
-		end
-		if (tLiveHealth >= 0) then
-			anInfo["health"] = tLiveHealth;
-		end
-	end
-
-	if (anInfo["healthmax"] <= 0) then
+	local tMax = anInfo["healthmax"];
+	local tHealth = anInfo["health"];
+	if (tMax == nil or tMax <= 0 or tHealth == nil) then
 		return nil;
 	end
 
@@ -647,8 +678,6 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 		tHealBarLayout["amountAbs"] = VUHDO_getAbsorbOnUnit(aUnit);
 	end
 
-	local tMax = anInfo["healthmax"];
-	local tHealth = anInfo["health"];
 	local tAbs = tHealBarLayout["amountAbs"];
 	aMyInc = aMyInc or 0;
 	aOtherInc = aOtherInc or 0;
@@ -698,7 +727,7 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	end
 
 	local tHealthPlusIncAbs = tHealth + tEffectiveInc + tAbs;
-	tHealBarLayout["hasOverAbsorb"] = tHealBarLayout["hasAbsorb"] and tHealthPlusIncAbs >= tMax;
+	tHealBarLayout["hasOverAbsorb"] = tHealBarLayout["hasAbsorb"] and tHealthPlusIncAbs > tMax;
 
 	if (tHealBarLayout["hasAbsorb"] and tAbsorbStart >= tMax) then
 		tHealBarLayout["absorbEndPct"] = 100;
@@ -949,9 +978,8 @@ local function _VUHDO_updateIncHeal(aUnit)
 			end
 		end
 		VUHDO_refreshHlBarBorderForButton(tButton, aUnit);
-		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
-			VUHDO_customizeText(tButton, 2, false);
-		end
+		-- Life text is refreshed by VUHDO_updateHealthBarsFor (modes 2/3/9/…);
+		-- do not call customizeText here — that duplicated work on every UNIT_HEALTH / mode 9.
 	end
 end
 
@@ -1290,9 +1318,8 @@ function VUHDO_healthBarBouquetCallback(aUnit, anIsActive, anIcon, aCurrValue, a
 		end
 	end
 
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and VUHDO_RAID[aUnit] ~= nil) then
-		_VUHDO_updateIncHeal(aUnit);
-	end
+	-- Absorb/inc overlay is applied by VUHDO_updateHealthBarsFor via VUHDO_updateIncHeal
+	-- (modes 2/3/5/9/10/1). Calling _VUHDO_updateIncHeal here doubled layout+paint on UNIT_HEALTH.
 
 	if (VUHDO_RAID[aUnit] == nil) then
 		return;
@@ -1388,9 +1415,7 @@ function VUHDO_healthBarBouquetCallbackCustom(aUnit, anIsActive, anIcon, aCurrVa
 		end
 	end
 
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and VUHDO_RAID[aUnit] ~= nil) then
-		_VUHDO_updateIncHeal(aUnit);
-	end
+	-- Absorb/inc overlay: see VUHDO_healthBarBouquetCallback — deferred to updateHealthBarsFor.
 end
 
 --
@@ -1577,6 +1602,13 @@ function VUHDO_updateHealthBarsFor(aUnit, anUpdateMode)
 	elseif (3 == anUpdateMode) then -- VUHDO_UPDATE_HEALTH_MAX
 		for _, tButton in pairs(tAllButtons) do
 			VUHDO_customizeText(tButton, 2, true); -- VUHDO_UPDATE_HEALTH
+		end
+
+	elseif (9 == anUpdateMode) then -- VUHDO_UPDATE_INC (absorbs / incoming)
+		if (sIsOverhealText or VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+			for _, tButton in pairs(tAllButtons) do
+				VUHDO_customizeText(tButton, 2, true); -- VUHDO_UPDATE_HEALTH
+			end
 		end
 
 	elseif (10 == anUpdateMode) then -- VUHDO_UPDATE_ALIVE

@@ -4,6 +4,9 @@
 	<Script file="Libs\LibStub\LibStub.lua" />
 	<Script file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua" />
 	<Script file="VuhDoAbsorbLibLoader.lua" />
+	<!-- Fallback absorb libs (each early-returns when UnitGetTotalAbsorbs exists). No loadfile. -->
+	<Script file="Libs\SpecializedAbsorbs-1.0\SpecializedAbsorbs-1.0.lua" />
+	<Script file="Libs\LibShieldLeft-1.0\LibShieldLeft.lua" />
 	<Script file="Libs\libdatabroker-1-1\LibDataBroker-1.1.lua" />
 	<Include file="Libs\LibHealComm-4.0\LibHealComm-4.0.xml" />
 

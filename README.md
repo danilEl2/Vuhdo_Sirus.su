@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.2` / `v2.23.8` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.3` / `v2.23.8` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -69,6 +69,15 @@
 <img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
 
 ## История изменений
+
+### v2.23.8-beta.3 (по сравнению с v2.23.8-beta.2)
+
+- Исправлено: мигание/пропадание щита при бафах на max HP (sticky-кэш + soft-zero confirm)
+- Исправлено: гонка UNIT_MAXHEALTH — стабилизация текущего HP ~0.2 с, без ложного damage flash
+- Улучшено: опрос absorbs в бою (до EVENT_COUNT), dirty-queue для coalesced redraw
+- Улучшено: fallback-библиотеки через `<Script>` (без `loadfile`), без подмены `_G.UnitGetTotalAbsorbs`
+- Улучшено: over-absorb glow учитывает ориентацию бара (в т.ч. вертикальные)
+- Улучшено: дефолт опроса absorbs 3000 мс; адаптеры переинициализируются при загрузке профиля
 
 ### v2.23.8-beta.2 (по сравнению с v2.23.8-beta)
 

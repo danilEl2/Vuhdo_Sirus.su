@@ -1,3 +1,6 @@
+-- Skip combat-log shield parser when the client has native absorbs (Sirus).
+if type(UnitGetTotalAbsorbs) == "function" then return end
+
 local MAJOR_VERSION = "LibShieldLeft-1.0"
 local MINOR_VERSION = tonumber(("$Revision: 9999 $"):match("%d+"))
 

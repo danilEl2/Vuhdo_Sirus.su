@@ -419,8 +419,10 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 			end
 		end
 	elseif ("UNIT_ABSORB_AMOUNT_CHANGED" == anEvent) then
+		-- First delivery proves the server emits the event; until then UNIT_AURA soft-refresh stays on.
+		VUHDO_HAS_ABSORB_EVENT = true;
 		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and (VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
-			VUHDO_refreshAbsorbOnUnit(anArg1);
+			VUHDO_refreshAbsorbOnUnit(anArg1, true);
 		end
 	elseif ("UNIT_HEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
@@ -456,6 +458,10 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 	elseif ("UNIT_MAXHEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 			VUHDO_updateHealth(anArg1, VUHDO_UPDATE_HEALTH_MAX);
+			-- Soft refresh: keep sticky absorb cache across max-HP aura ticks.
+			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+				VUHDO_refreshAbsorbOnUnit(anArg1);
+			end
 		end
 
 	elseif ("UNIT_TARGET" == anEvent) then
@@ -1117,6 +1123,19 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 		tTimeDelta = 0;
 	end
 
+	-- Absorbs: coalesce dirty redraws + poll BEFORE EVENT_COUNT / CONFIG_SHOW_RAID
+	-- gates so fallback still runs in combat and under event pressure (Muse P1).
+	if (VUHDO_flushAbsorbDirty ~= nil) then
+		VUHDO_flushAbsorbDirty();
+	end
+	if (VUHDO_TIMERS["UPDATE_ABSORBS"] > 0) then
+		VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_TIMERS["UPDATE_ABSORBS"] - aTimeDelta;
+		if (VUHDO_TIMERS["UPDATE_ABSORBS"] <= 0) then
+			VUHDO_refreshAllAbsorbs();
+			VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_getAbsorbPollIntervalMs() * 0.001;
+		end
+	end
+
 	if (VUHDO_EVENT_COUNT > 0) then
 		if (VUHDO_LAST_TIME_NO_EVENT + 3 < tNow) then
 			VUHDO_LAST_TIME_NO_EVENT = tNow;
@@ -1382,14 +1401,7 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 		end
 	end
 
-	-- refresh absorbs?
-	if (VUHDO_TIMERS["UPDATE_ABSORBS"] > 0) then
-		VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_TIMERS["UPDATE_ABSORBS"] - aTimeDelta;
-		if (VUHDO_TIMERS["UPDATE_ABSORBS"] <= 0) then
-			VUHDO_refreshAllAbsorbs();
-			VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_getAbsorbPollIntervalMs() * 0.001;
-		end
-	end
+	-- UPDATE_ABSORBS is handled before EVENT_COUNT / CONFIG_SHOW_RAID gates above.
 
 	-- Refresh Inspect, set new unit if no server request pending
 	if (VUHDO_TIMERS["REFRESH_INSPECT"] > 0 and VUHDO_NEXT_INSPECT_UNIT == nil and not InCombatLockdown()) then

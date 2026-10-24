@@ -1,10 +1,19 @@
 if type(UnitGetTotalAbsorbs) == "function" then return end
 
+-- Soft-deps: Ace libs are not bundled with VuhDo. Skip quietly if absent
+-- (another addon may provide them later; absorb adapter falls back to 0).
+if not LibStub("AceComm-3.0", true)
+	or not LibStub("AceTimer-3.0", true)
+	or not LibStub("AceSerializer-3.0", true) then
+	return
+end
+
 ------------------------------------------------------------------------
 -- SpecializedAbsorbs -fixes fxpw for sirus
 ------------------------------------------------------------------------
 local _, ns = ...
-local Compat = ns.Compat
+-- Compat table was historically passed via loadfile; unused by current lib body.
+local Compat = (ns and ns.Compat) or {}
 local MAJOR, MINOR = "SpecializedAbsorbs-1.0", 31
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
