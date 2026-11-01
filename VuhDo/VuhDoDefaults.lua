@@ -824,10 +824,13 @@ function VUHDO_loadDefaultConfig()
 		VUHDO_CONFIG["SHOW_ABSORBS"] = true;
 	end
 
-	-- One-shot: previous default was 1500; bump saved copies of that default to 3000.
-	-- Users who intentionally want 1500 can set the slider again after this load.
-	if (VUHDO_CONFIG["ABSORB_REFRESH_MS"] == 1500) then
-		VUHDO_CONFIG["ABSORB_REFRESH_MS"] = 3000;
+	-- One-shot flag: previous default was 1500 → bump once to 3000.
+	-- Without the flag, every login/profile load remapped intentional 1500 again.
+	if (VUHDO_CONFIG["ABSORB_REFRESH_MS_MIGRATED_3000"] ~= true) then
+		if (VUHDO_CONFIG["ABSORB_REFRESH_MS"] == 1500) then
+			VUHDO_CONFIG["ABSORB_REFRESH_MS"] = 3000;
+		end
+		VUHDO_CONFIG["ABSORB_REFRESH_MS_MIGRATED_3000"] = true;
 	end
 
 	if (VUHDO_CONFIG["CUSTOM_DEBUFF"].version == nil or VUHDO_CONFIG["CUSTOM_DEBUFF"].version < 2) then

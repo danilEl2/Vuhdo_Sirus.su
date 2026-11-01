@@ -374,6 +374,11 @@ function VUHDO_reloadRaidDemoUsers()
 	end
 	tHasLoaded = true;
 	twipe(VUHDO_RAID);
+	-- Demo reuses raidN tokens; clear sticky absorbs so Options does not paint
+	-- live/previous shields onto fake HP bars.
+	if (VUHDO_clearAbsorbCache ~= nil) then
+		VUHDO_clearAbsorbCache();
+	end
 	VUHDO_TEST_USERS_LEFT = VUHDO_deepCopyTable(VUHDO_DEMO_SETUP[VUHDO_CONFIG_TEST_USERS]);
 	tPetDemoIdx = 1;
 	tRaidDemoIdx = 1;

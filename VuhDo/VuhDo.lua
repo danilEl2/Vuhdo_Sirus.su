@@ -538,6 +538,28 @@ end
 
 
 
+-- After max-HP fill hold expires with no follow-up UNIT_HEALTH, re-read UnitHealth
+-- so emergency/sort and overshield tip do not sit on predicted values (review #14).
+local tPendingUnit, tPendingInfo, tPendingNow;
+function VUHDO_reconcileMaxHpFillPending()
+	if (VUHDO_RAID == nil) then
+		return;
+	end
+
+	tPendingNow = GetTime();
+	for tPendingUnit, tPendingInfo in pairs(VUHDO_RAID) do
+		if (tPendingInfo["vuhdoMaxHpFillPending"] ~= nil
+				and tPendingNow >= tPendingInfo["vuhdoMaxHpFillPending"]) then
+			-- Clear first so setHealth mode-2 does not re-enter the hold branch.
+			tPendingInfo["vuhdoMaxHpFillPending"] = nil;
+			tPendingInfo["vuhdoMaxHpFillHealth"] = nil;
+			VUHDO_updateHealth(tPendingUnit, 2); -- VUHDO_UPDATE_HEALTH
+		end
+	end
+end
+
+
+
 -- Callback for UNIT_HEALTH / UNIT_MAXHEALTH events
 local tUnit;
 local tOwner;
@@ -1088,6 +1110,16 @@ function VUHDO_reloadRaidMembers()
 		end
 
 		VUHDO_TIMERS["MIRROR_TO_MACRO"] = 8;
+	end
+
+	-- Unit tokens (raidN) reuse after roster change; drop sticky absorbs so a
+	-- new neighbor cannot inherit the previous player's shield until poll.
+	-- Skip refreshAllAbsorbs in Options demo — that would paint live API onto fake bars.
+	if (VUHDO_clearAbsorbCache ~= nil) then
+		VUHDO_clearAbsorbCache();
+		if (not VUHDO_isConfigDemoUsers() and VUHDO_refreshAllAbsorbs ~= nil) then
+			VUHDO_refreshAllAbsorbs();
+		end
 	end
 
 	VUHDO_PLAYER_GROUP = VUHDO_getUnitGroup(VUHDO_PLAYER_RAID_ID, false);

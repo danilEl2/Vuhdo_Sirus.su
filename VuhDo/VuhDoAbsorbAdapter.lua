@@ -45,6 +45,9 @@ end
 
 --
 function VUHDO_getAbsorbPollIntervalMs()
+	if (VUHDO_CONFIG == nil) then
+		return 3000;
+	end
 	return VUHDO_CONFIG["ABSORB_REFRESH_MS"] or 3000;
 end
 
@@ -82,6 +85,15 @@ function VUHDO_markAbsorbDirty(aUnit)
 	VUHDO_ABSORB_DIRTY_PENDING = true;
 end
 
+-- Drop one unit from the dirty set after a synchronous mode-9 paint (auth absorb).
+function VUHDO_clearAbsorbDirtyUnit(aUnit)
+	if (aUnit == nil) then
+		return;
+	end
+
+	VUHDO_ABSORB_DIRTY[aUnit] = nil;
+end
+
 --
 -- Flush coalesced absorb/inc redraws (call from OnUpdate; not synchronously from poll).
 function VUHDO_flushAbsorbDirty()
@@ -109,20 +121,16 @@ function VUHDO_flushAbsorbDirty()
 end
 
 --
--- Display read: prefer live API, but keep last known amount when the API briefly
--- returns 0 (common on Sirus during max-HP aura application). Cleared by
--- authoritative refresh, TTL (~one poll interval), or soft-zero confirm after delay.
+-- Display read (read-only vs cache/streak): prefer live API, else sticky cache
+-- while within TTL. Must NOT write CACHE=0 or reset soft-zero streak — zero is
+-- owned by refreshAbsorbOnUnit (soft confirm / poll / UNIT_ABSORB).
 function VUHDO_getAbsorbOnUnit(aUnit)
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false) then
+	if (VUHDO_CONFIG == nil or VUHDO_CONFIG["SHOW_ABSORBS"] == false) then
 		return 0;
 	end
 
 	local tLive = VUHDO_unitGetTotalAbsorbs(aUnit) or 0;
 	if (tLive > 0) then
-		VUHDO_ABSORB_CACHE[aUnit] = tLive;
-		VUHDO_ABSORB_CACHE_TIME[aUnit] = GetTime();
-		VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
-		VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
 		return tLive;
 	end
 
@@ -134,10 +142,6 @@ function VUHDO_getAbsorbOnUnit(aUnit)
 	local tCachedAt = VUHDO_ABSORB_CACHE_TIME[aUnit];
 	local tTtl = VUHDO_getAbsorbPollIntervalMs() * 0.001;
 	if (tCachedAt ~= nil and (GetTime() - tCachedAt) > tTtl) then
-		VUHDO_ABSORB_CACHE[aUnit] = 0;
-		VUHDO_ABSORB_CACHE_TIME[aUnit] = nil;
-		VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
-		VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
 		return 0;
 	end
 
@@ -174,36 +178,57 @@ function VUHDO_clearAbsorbCache()
 end
 
 --
--- anIsAuthoritative: true for UNIT_ABSORB_AMOUNT_CHANGED / poll — trust live 0.
--- Soft (health/max): keep sticky cache on a one-frame live 0; a second soft zero
--- only after ZERO_CONFIRM_SEC becomes authoritative (not same-tick MAXHEALTH+HEALTH).
+-- anIsAuthoritative:
+--   true   — UNIT_ABSORB_AMOUNT_CHANGED: trust live 0 immediately
+--   "poll" — periodic refresh: live 0 is NOT trusted while CACHE_TIME is inside
+--            ZERO_CONFIRM_SEC (avoids accepting an API flicker on the poll tick)
+--   false  — soft (health/max/aura): streak + confirm; soft-hold refreshes
+--            CACHE_TIME so TTL / poll do not wipe during the confirm window
 function VUHDO_refreshAbsorbOnUnit(aUnit, anIsAuthoritative)
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false or aUnit == nil) then
+	if (VUHDO_CONFIG == nil or VUHDO_CONFIG["SHOW_ABSORBS"] == false or aUnit == nil) then
 		return false;
 	end
 
 	local tLive = VUHDO_unitGetTotalAbsorbs(aUnit) or 0;
 	local tCached = VUHDO_ABSORB_CACHE[aUnit] or 0;
 	local tNow = GetTime();
+	local tIsPoll = (anIsAuthoritative == "poll");
+	local tIsAuth = (anIsAuthoritative == true) or tIsPoll;
 
-	if (tLive == 0 and tCached > 0 and not anIsAuthoritative) then
-		local tStreak = VUHDO_ABSORB_ZERO_STREAK[aUnit] or 0;
-		local tFirstAt = VUHDO_ABSORB_ZERO_STREAK_AT[aUnit];
+	if (tLive == 0 and tCached > 0) then
+		if (tIsPoll) then
+			local tCachedAt = VUHDO_ABSORB_CACHE_TIME[aUnit];
+			if (tCachedAt ~= nil and (tNow - tCachedAt) < VUHDO_ABSORB_ZERO_CONFIRM_SEC) then
+				-- Fresh positive / soft-hold: poll zero may be flicker.
+				return false;
+			end
+			VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
+			VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
+		elseif (tIsAuth) then
+			-- Native absorb event: shield really changed.
+			VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
+			VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
+		else
+			local tStreak = VUHDO_ABSORB_ZERO_STREAK[aUnit] or 0;
+			local tFirstAt = VUHDO_ABSORB_ZERO_STREAK_AT[aUnit];
 
-		if (tStreak < 1 or tFirstAt == nil) then
-			VUHDO_ABSORB_ZERO_STREAK[aUnit] = 1;
-			VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = tNow;
-			return false;
+			if (tStreak < 1 or tFirstAt == nil) then
+				VUHDO_ABSORB_ZERO_STREAK[aUnit] = 1;
+				VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = tNow;
+				VUHDO_ABSORB_CACHE_TIME[aUnit] = tNow;
+				return false;
+			end
+
+			if ((tNow - tFirstAt) < VUHDO_ABSORB_ZERO_CONFIRM_SEC) then
+				-- Still inside the confirm window (e.g. paired MAXHEALTH+HEALTH).
+				VUHDO_ABSORB_CACHE_TIME[aUnit] = tNow;
+				return false;
+			end
+
+			VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
+			VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
+			tIsAuth = true;
 		end
-
-		if ((tNow - tFirstAt) < VUHDO_ABSORB_ZERO_CONFIRM_SEC) then
-			-- Still inside the confirm window (e.g. paired MAXHEALTH+HEALTH).
-			return false;
-		end
-
-		VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
-		VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
-		anIsAuthoritative = true;
 	else
 		VUHDO_ABSORB_ZERO_STREAK[aUnit] = 0;
 		VUHDO_ABSORB_ZERO_STREAK_AT[aUnit] = nil;
@@ -231,18 +256,23 @@ end
 --
 local tInfo;
 function VUHDO_refreshAllAbsorbs()
-	if (VUHDO_CONFIG["SHOW_ABSORBS"] == false or VUHDO_RAID == nil) then
+	if (VUHDO_CONFIG == nil or VUHDO_CONFIG["SHOW_ABSORBS"] == false or VUHDO_RAID == nil) then
 		return;
 	end
 
 	for tUnit, tInfo in pairs(VUHDO_RAID) do
 		if (tInfo["connected"] and not tInfo["dead"]) then
-			VUHDO_refreshAbsorbOnUnit(tUnit, true);
+			VUHDO_refreshAbsorbOnUnit(tUnit, "poll");
 		else
+			-- Dead / offline: drop sticky cache and queue overlay wipe (weekly P3).
+			local tHadAbsorb = (VUHDO_ABSORB_CACHE[tUnit] or 0) > 0;
 			VUHDO_ABSORB_CACHE[tUnit] = 0;
 			VUHDO_ABSORB_CACHE_TIME[tUnit] = nil;
 			VUHDO_ABSORB_ZERO_STREAK[tUnit] = 0;
 			VUHDO_ABSORB_ZERO_STREAK_AT[tUnit] = nil;
+			if (tHadAbsorb) then
+				VUHDO_markAbsorbDirty(tUnit);
+			end
 		end
 	end
 
@@ -305,6 +335,10 @@ end
 
 --
 function VUHDO_setAbsorbEnabled()
+	if (VUHDO_CONFIG == nil) then
+		return;
+	end
+
 	if (LibAbsorb == nil or VUHDO_isAbsorbsNative()) then
 		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 			VUHDO_setAbsorbRefreshTimer(true);

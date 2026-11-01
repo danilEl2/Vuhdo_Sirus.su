@@ -414,22 +414,30 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 	elseif ("UNIT_AURA" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
 			VUHDO_updateHealth(anArg1, 4); -- VUHDO_UPDATE_DEBUFF
-			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and not VUHDO_HAS_ABSORB_EVENT) then
+			if (VUHDO_CONFIG and VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and not VUHDO_HAS_ABSORB_EVENT) then
 				VUHDO_refreshAbsorbOnUnit(anArg1);
 			end
 		end
 	elseif ("UNIT_ABSORB_AMOUNT_CHANGED" == anEvent) then
 		-- First delivery proves the server emits the event; until then UNIT_AURA soft-refresh stays on.
 		VUHDO_HAS_ABSORB_EVENT = true;
-		if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and (VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
-			VUHDO_refreshAbsorbOnUnit(anArg1, true);
+		-- CONFIG may still be nil on brand-new chars before VUHDO_init (event registered in OnLoad).
+		if (VUHDO_CONFIG and VUHDO_CONFIG["SHOW_ABSORBS"] ~= false and (VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
+			-- Auth change: paint mode-9 immediately (issue #5); skip ≤50 ms coalesce lag.
+			if (VUHDO_refreshAbsorbOnUnit(anArg1, true) and VUHDO_updateHealthBarsFor ~= nil) then
+				if (VUHDO_clearAbsorbDirtyUnit ~= nil) then
+					VUHDO_clearAbsorbDirtyUnit(anArg1);
+				end
+				VUHDO_updateHealthBarsFor(anArg1, 9); -- VUHDO_UPDATE_INC
+			end
 		end
 	elseif ("UNIT_HEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
-			VUHDO_updateHealth(anArg1, 2); -- VUHDO_UPDATE_HEALTH
-			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+			-- Soft-refresh before health paint so abs layout sees updated cache (#5).
+			if (VUHDO_CONFIG and VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 				VUHDO_refreshAbsorbOnUnit(anArg1);
 			end
+			VUHDO_updateHealth(anArg1, 2); -- VUHDO_UPDATE_HEALTH
 		end
 	elseif ("UNIT_MANA" == anEvent or "UNIT_ENERGY" == anEvent or "UNIT_RAGE" == anEvent or "UNIT_RUNIC_POWER" ==
 		anEvent) then
@@ -457,11 +465,11 @@ function VUHDO_OnEvent(anInstance, anEvent, anArg1, anArg2, anArg3, anArg4, _, a
 
 	elseif ("UNIT_MAXHEALTH" == anEvent) then
 		if ((VUHDO_RAID or tEmptyRaid)[anArg1] ~= nil) then
-			VUHDO_updateHealth(anArg1, VUHDO_UPDATE_HEALTH_MAX);
-			-- Soft refresh: keep sticky absorb cache across max-HP aura ticks.
-			if (VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
+			-- Soft refresh before max-HP paint (same order as UNIT_HEALTH / #5).
+			if (VUHDO_CONFIG and VUHDO_CONFIG["SHOW_ABSORBS"] ~= false) then
 				VUHDO_refreshAbsorbOnUnit(anArg1);
 			end
+			VUHDO_updateHealth(anArg1, VUHDO_UPDATE_HEALTH_MAX);
 		end
 
 	elseif ("UNIT_TARGET" == anEvent) then
@@ -1134,6 +1142,11 @@ function VUHDO_OnUpdate(anInstance, aTimeDelta)
 			VUHDO_refreshAllAbsorbs();
 			VUHDO_TIMERS["UPDATE_ABSORBS"] = VUHDO_getAbsorbPollIntervalMs() * 0.001;
 		end
+	end
+
+	-- Max-HP fill hold expiry without a follow-up UNIT_HEALTH (#14).
+	if (VUHDO_reconcileMaxHpFillPending ~= nil) then
+		VUHDO_reconcileMaxHpFillPending();
 	end
 
 	if (VUHDO_EVENT_COUNT > 0) then

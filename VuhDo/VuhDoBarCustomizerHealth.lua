@@ -408,32 +408,35 @@ local function VUHDO_updateOverAbsorbGlow(anAbsBar, aShow, aHealthBar)
 
 	if (tOrient == 3 or tOrient == 4) then
 		-- Vertical bars: glow on the growth tip (top or bottom).
-		-- Rotate Shield-Overshield UVs 90° so the strip runs along the tip edge.
+		-- Rotate Shield-Overshield UVs 90° so the strip runs along the tip edge;
+		-- tipAtStart mirrors so the gradient still faces into the bar.
 		tGlow:SetHeight(16);
 		tGlow:SetWidth(anAbsBar:GetWidth() + 5);
-		tGlow:SetTexCoord(0, 1, 1, 1, 0, 0, 1, 0);
 		tTipAtStart = (tOrient == 4);
 		if (tInvert) then
 			tTipAtStart = not tTipAtStart;
 		end
 		if (tTipAtStart) then
+			tGlow:SetTexCoord(0, 0, 1, 0, 0, 1, 1, 1);
 			tGlow:SetPoint("TOP", tAnchor, "BOTTOM", 0, 7);
 		else
+			tGlow:SetTexCoord(0, 1, 1, 1, 0, 0, 1, 0);
 			tGlow:SetPoint("BOTTOM", tAnchor, "TOP", 0, -7);
 		end
 	else
-		-- Horizontal bars: glow on left or right tip.
+		-- Horizontal bars: glow on left or right tip; tipAtStart flips U.
 		tGlow:SetWidth(16);
 		tGlow:SetHeight(anAbsBar:GetHeight() + 5);
-		tGlow:SetTexCoord(0, 1, 0, 1);
 		tTipAtStart = (tOrient == 2);
 		if (tInvert) then
 			tTipAtStart = not tTipAtStart;
 		end
 		if (tTipAtStart) then
+			tGlow:SetTexCoord(1, 0, 0, 1);
 			-- Mirror of RIGHT tip: +7 pulls the 16px strip onto the bar edge.
 			tGlow:SetPoint("RIGHT", tAnchor, "LEFT", 7, 0);
 		else
+			tGlow:SetTexCoord(0, 1, 0, 1);
 			tGlow:SetPoint("LEFT", tAnchor, "RIGHT", -7, 0);
 		end
 	end
@@ -645,7 +648,6 @@ local tHealBarLayout = {
 	["hasAbsorb"] = false,
 	["hasOverAbsorb"] = false,
 	["isHealthFull"] = false,
-	["absorbOverlayFromRight"] = false,
 };
 
 -- ИНВАРИАНТЫ overshield:
@@ -730,13 +732,12 @@ local function VUHDO_computeHealBarLayout(anInfo, aUnit, aMyInc, aOtherInc)
 	tHealBarLayout["hasOverAbsorb"] = tHealBarLayout["hasAbsorb"] and tHealthPlusIncAbs > tMax;
 
 	if (tHealBarLayout["hasAbsorb"] and tAbsorbStart >= tMax) then
+		-- Overlay from the right; paintAbsorbFromDisplayed derives tFromRight from displayed HP.
 		tHealBarLayout["absorbEndPct"] = 100;
 		tHealBarLayout["absorbStartPct"] = max(0, 100 - 100 * tAbs / tMax);
-		tHealBarLayout["absorbOverlayFromRight"] = true;
 	else
 		tHealBarLayout["absorbStartPct"] = min(100, 100 * tAbsorbStart / tBarDenom);
 		tHealBarLayout["absorbEndPct"] = min(100, 100 * (tAbsorbStart + tAbs) / tBarDenom);
-		tHealBarLayout["absorbOverlayFromRight"] = false;
 	end
 
 	return tHealBarLayout;
@@ -1152,27 +1153,35 @@ function VUHDO_customizeText(aButton, aMode, anIsTarget)
 	end
 
 	-- Life Text
+	-- Percent: health+absorb(+inc), clamped ≤100%.
+	-- Missing: HP hole only — absorb must not hide how much to top off.
+	-- Left: same sum as Percent, but numerator clamped to max (no "22k / 20k").
 	if (tIsLife and tIsShowLife) then
 		tAmountInc = VUHDO_getIncHealOnUnit(tInfo["name"]);
 		tAmountAbs = VUHDO_getAbsorbOnUnit(tUnit);
 
-		tLifeAmount = tInfo["health"] + tAmountAbs;
-		if (sIsOverhealText) then
-			tLifeAmount = tLifeAmount + tAmountInc;
-		end
-
-		if (1 == tLifeConfig["mode"] or anIsTarget) then -- VUHDO_LT_MODE_PERCENT
-			tLifeString = floor(VUHDO_getUnitHealthModiPercent(tInfo, tLifeAmount - tInfo["health"])) .. "%";
-		elseif (3 == tLifeConfig["mode"]) then -- VUHDO_LT_MODE_MISSING
-			tMissLife = tLifeAmount - tInfo["healthmax"];
+		if (3 == tLifeConfig["mode"]) then -- VUHDO_LT_MODE_MISSING
+			tMissLife = tInfo["health"] - tInfo["healthmax"];
 			if (tMissLife < -10) then
 				tLifeString = VUHDO_getKiloText(tMissLife, tSetup);
 			else
 				tLifeString = "";
 			end
-		else -- VUHDO_LT_MODE_LEFT
-			tLifeString = VUHDO_getKiloText(tLifeAmount, tSetup) .. " / " ..
-							  VUHDO_getKiloText(tInfo["healthmax"], tSetup);
+		else
+			tLifeAmount = tInfo["health"] + tAmountAbs;
+			if (sIsOverhealText) then
+				tLifeAmount = tLifeAmount + tAmountInc;
+			end
+
+			if (1 == tLifeConfig["mode"] or anIsTarget) then -- VUHDO_LT_MODE_PERCENT
+				tLifeString = floor(VUHDO_getUnitHealthModiPercent(tInfo, tLifeAmount - tInfo["health"])) .. "%";
+			else -- VUHDO_LT_MODE_LEFT
+				if (tLifeAmount > tInfo["healthmax"]) then
+					tLifeAmount = tInfo["healthmax"];
+				end
+				tLifeString = VUHDO_getKiloText(tLifeAmount, tSetup) .. " / " ..
+								  VUHDO_getKiloText(tInfo["healthmax"], tSetup);
+			end
 		end
 
 		if (not tIsLifeInName) then

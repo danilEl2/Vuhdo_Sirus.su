@@ -167,6 +167,7 @@ end
 local tHotBar;
 local tHlBar;
 local tHotColor;
+local tChargeColor;
 local tOpacity;
 local tHlO;
 local function VUHDO_applyHotBarColor(aButton, anIndex, aColor)
