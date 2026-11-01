@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.3` / `v2.23.8` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.4` / `v2.23.8` или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -69,6 +69,18 @@
 <img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
 
 ## История изменений
+
+### v2.23.8-beta.4 (по сравнению с v2.23.8-beta.3)
+
+- Исправлено: кэш absorbs не наследует чужой щит после перестановки `raidN` / Options demo
+- Исправлено: `getAbsorbOnUnit` больше не пишет 0 в кэш (не обходит soft-zero confirm)
+- Исправлено: one-shot миграция `ABSORB_REFRESH_MS` 1500→3000 (не каждый `/reload`)
+- Исправлено: nil-guard `VUHDO_CONFIG` на `UNIT_ABSORB_AMOUNT_CHANGED` и соседних путях
+- Исправлено: glow UV зеркалится при `tipAtStart`; life text Missing/Left со щитом
+- Исправлено: poll на границе TTL не стирает щит из‑за API-flicker
+- Исправлено: `UNIT_HEALTH` soft-refresh до paint; auth absorb — сразу mode-9 (без ≤50 мс lag)
+- Исправлено: по истечении max-HP fill pending (~0.2 с) HP перечитывается без ожидания события
+- Исправлено: dead/offline poll сбрасывает оверлей через dirty-queue
 
 ### v2.23.8-beta.3 (по сравнению с v2.23.8-beta.2)
 
