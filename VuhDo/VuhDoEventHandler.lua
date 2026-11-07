@@ -36,6 +36,7 @@ local VUHDO_updateBouquetsForEvent;
 local VUHDO_getUnitZoneName;
 local VUHDO_updateClusterHighlights;
 local VUHDO_refreshAbsorbOnUnit;
+local VUHDO_peacemakerGroupHeal;
 
 local GetTime = GetTime;
 local CheckInteractDistance = CheckInteractDistance;
@@ -86,6 +87,7 @@ local function VUHDO_eventHandlerInitBurst()
 	VUHDO_getUnitZoneName = VUHDO_GLOBAL["VUHDO_getUnitZoneName"];
 	VUHDO_updateClusterHighlights = VUHDO_GLOBAL["VUHDO_updateClusterHighlights"];
 	VUHDO_refreshAbsorbOnUnit = VUHDO_GLOBAL["VUHDO_refreshAbsorbOnUnit"];
+	VUHDO_peacemakerGroupHeal = VUHDO_GLOBAL["VUHDO_peacemakerGroupHeal"];
 
 	sRangeSpell = VUHDO_CONFIG["RANGE_SPELL"] or "*foo*";
 	sIsHealerMode = not VUHDO_CONFIG["THREAT"]["IS_TANK_MODE"];
@@ -979,6 +981,7 @@ local function VUHDO_updateAllRange()
 		if (sIsRangeKnown) then
 			tIsInRange = tInfo["connected"] and
 							 (1 == IsSpellInRange(sRangeSpell, tUnit) or
+								 (VUHDO_peacemakerGroupHeal ~= nil and VUHDO_peacemakerGroupHeal(tUnit)) or
 								 ((tInfo["dead"] or tInfo["charmed"]) and tInfo["baseRange"]) or "player" == tUnit or
 								 ((tUnit == "focus" or tUnit == "target") and CheckInteractDistance(tUnit, 1)));
 		else

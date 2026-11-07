@@ -36,7 +36,7 @@
 
 ## Установка
 
-1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег `v2.23.8-beta.4` / `v2.23.8` или новее).
+1. Скачайте архив из [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases) (тег **`v2.23.8`** или новее).
 2. Распакуйте папки `VuhDo` и `VuhDoOptions` в `World of Warcraft\Interface\AddOns\`.
 3. Если установлен другой VuhDo — удалите или переименуйте его папки.
 4. Перезагрузите интерфейс: `/reload`.
@@ -69,6 +69,14 @@
 <img width="165" height="125" alt="Abs-бар при неполном HP" src="https://github.com/user-attachments/assets/e972f3aa-083a-41c8-bd3a-9ff9c9762d45" />
 
 ## История изменений
+
+### v2.23.8 (stable, включает beta.2–beta.5)
+
+- Добавлено: Peacemaker (Sirus 150605) — group heal в `UnitInRange` не серый при OOR heal-spell (#18)
+- Исправлено: скачок abs-бара при мелком изменении max HP — overflow tip пинит ширину справа; near-full fill (#17)
+- Исправлено: старый профиль без `SHOW_ABSORBS` больше не держит флаг прошлой сессии (#15)
+- Исправлено: Options demo не подмешивает live shields на fake `raidN` через poll/API (#13)
+- Исправлено: полный цикл absorbs beta.2–4 (кэш/soft-zero/poll TTL/overshield/life text/max-HP fill/roster)
 
 ### v2.23.8-beta.4 (по сравнению с v2.23.8-beta.3)
 

@@ -308,6 +308,7 @@ local tIsDcChange;
 
 -- Max-HP aura race: UNIT_MAXHEALTH often arrives before current HP is topped up
 -- by the same delta. Return expected current HP, or nil if no stabilization needed.
+-- Also covers small max-up where HP already moved partially but not to new max (#17).
 local function VUHDO_getStabilizedHealthAfterMaxUp(anInfo, aNewMax, aNewHealth, anIsDead)
 	if (anIsDead or anInfo == nil or aNewMax == nil or aNewHealth == nil) then
 		return nil;
@@ -319,18 +320,22 @@ local function VUHDO_getStabilizedHealthAfterMaxUp(anInfo, aNewMax, aNewHealth, 
 		return nil;
 	end
 
-	-- Current HP not yet raised with the max (still at/near previous value).
-	if (aNewHealth >= aNewMax or aNewHealth > tOldHealth) then
+	if (aNewHealth >= aNewMax) then
 		return nil;
 	end
 
+	-- Real damage during the aura tick — do not invent HP.
 	if (aNewHealth < (tOldHealth - 1)) then
 		return nil;
 	end
 
-	-- Full: expect top-up to new max. Missing: expect +same delta as max.
+	-- Was full / near-full: expect top-up to new max even if HP already rose a bit
+	-- (partial same-tick catch-up still leaves tip-mode absorb sliver).
 	if (tOldHealth >= (tOldMax - 1)) then
 		tExpectedHealth = aNewMax;
+	elseif (aNewHealth > tOldHealth) then
+		-- Missing HP already advanced with the max — trust live values.
+		return nil;
 	else
 		tExpectedHealth = tOldHealth + (aNewMax - tOldMax);
 		if (tExpectedHealth > aNewMax) then

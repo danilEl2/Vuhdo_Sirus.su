@@ -9,8 +9,11 @@ local strbyte = strbyte;
 local floor = floor;
 local tonumber = tonumber;
 local UnitInRaid = UnitInRaid;
+local UnitInParty = UnitInParty;
+local UnitIsUnit = UnitIsUnit;
 local UnitExists = UnitExists;
 local UnitInRange = UnitInRange;
+local UnitBuff = UnitBuff;
 local GetRaidRosterInfo = GetRaidRosterInfo;
 local IsInInstance = IsInInstance;
 local IsSpellInRange = IsSpellInRange;
@@ -19,6 +22,8 @@ local GetRealZoneText = GetRealZoneText;
 local GetMapInfo = GetMapInfo;
 local GetSpellInfo = GetSpellInfo;
 local pairs = pairs;
+local type = type;
+local strlower = strlower;
 local _ = _;
 
 -- returns an array of numbers sequentially found in a string
@@ -223,15 +228,59 @@ function VUHDO_getUnitGroup(aUnit, anIsPet)
 	end
 end
 
+-- Sirus Peacemaker (spellId 150605 / racial_innerpeace): group heal stays in
+-- UnitInRange even when the heal spell is out of spell-range (#18 / HealBot parity).
+local VUHDO_PEACEMAKER_SPELL_ID = 150605;
+local sPeacemakerCacheTime = 0;
+local sPeacemakerCache = false;
+
+function VUHDO_playerHasPeacemaker()
+	local tNow = GetTime();
+	if ((tNow - sPeacemakerCacheTime) < 1) then
+		return sPeacemakerCache;
+	end
+
+	sPeacemakerCacheTime = tNow;
+	sPeacemakerCache = false;
+
+	local tCnt, tName, tTexture, tSpellId;
+	for tCnt = 1, 40 do
+		tName, _, tTexture, _, _, _, _, _, _, _, tSpellId = UnitBuff("player", tCnt);
+		if (not tName) then
+			break;
+		end
+		if (tSpellId == VUHDO_PEACEMAKER_SPELL_ID
+				or (type(tTexture) == "string"
+					and strfind(strlower(tTexture), "racial_innerpeace", 1, true))) then
+			sPeacemakerCache = true;
+			break;
+		end
+	end
+
+	return sPeacemakerCache;
+end
+
+function VUHDO_peacemakerGroupHeal(aUnit)
+	if (aUnit == nil or not VUHDO_playerHasPeacemaker()) then
+		return false;
+	end
+	if (UnitInRange(aUnit) ~= 1) then
+		return false;
+	end
+	return UnitInParty(aUnit) or UnitInRaid(aUnit) or UnitIsUnit(aUnit, "player");
+end
+
 -- returns wether or not a unit is in range
 function VUHDO_isInRange(aUnit)
 	if ("focus" == aUnit or "target" == aUnit) then
 		return CheckInteractDistance(aUnit, 1);
 	elseif (sIsGuessRange) then
 		return UnitInRange(aUnit);
+	elseif (1 == IsSpellInRange(sRangeSpell, aUnit)) then
+		return true;
 	else
-		-- return UnitInRange(aUnit) or (1 == IsSpellInRange(sRangeSpell, aUnit));
-		return 1 == IsSpellInRange(sRangeSpell, aUnit);
+		-- Peacemaker override when heal-spell OOR but unit still in group range.
+		return VUHDO_peacemakerGroupHeal(aUnit);
 	end
 end
 

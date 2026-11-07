@@ -129,6 +129,11 @@ function VUHDO_getAbsorbOnUnit(aUnit)
 		return 0;
 	end
 
+	-- Options demo reuses raidN tokens; never paint live shields onto fake bars (#13).
+	if (VUHDO_isConfigDemoUsers ~= nil and VUHDO_isConfigDemoUsers()) then
+		return 0;
+	end
+
 	local tLive = VUHDO_unitGetTotalAbsorbs(aUnit) or 0;
 	if (tLive > 0) then
 		return tLive;
@@ -152,6 +157,10 @@ end
 local tUnit;
 local tCnt;
 local function VUHDO_absorbUpdateGUIDs(...)
+	if (VUHDO_isConfigDemoUsers ~= nil and VUHDO_isConfigDemoUsers()) then
+		return;
+	end
+
 	for tCnt = 1, select("#", ...) do
 		tUnit = VUHDO_RAID_GUIDS[select(tCnt, ...)];
 		if (tUnit ~= nil) then
@@ -186,6 +195,11 @@ end
 --            CACHE_TIME so TTL / poll do not wipe during the confirm window
 function VUHDO_refreshAbsorbOnUnit(aUnit, anIsAuthoritative)
 	if (VUHDO_CONFIG == nil or VUHDO_CONFIG["SHOW_ABSORBS"] == false or aUnit == nil) then
+		return false;
+	end
+
+	-- Demo / Options test users: skip live API so poll cannot fill cache (#13).
+	if (VUHDO_isConfigDemoUsers ~= nil and VUHDO_isConfigDemoUsers()) then
 		return false;
 	end
 
@@ -257,6 +271,10 @@ end
 local tInfo;
 function VUHDO_refreshAllAbsorbs()
 	if (VUHDO_CONFIG == nil or VUHDO_CONFIG["SHOW_ABSORBS"] == false or VUHDO_RAID == nil) then
+		return;
+	end
+
+	if (VUHDO_isConfigDemoUsers ~= nil and VUHDO_isConfigDemoUsers()) then
 		return;
 	end
 

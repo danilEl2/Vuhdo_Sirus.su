@@ -576,7 +576,10 @@ function VUHDO_paintAbsorbFromDisplayed(aHlBar)
 		tEnd = tStart + tW;
 		if (tEnd > 100) then
 			tEnd = 100;
-			if (tEnd - tStart <= 0.12) then
+			-- Tip-mode clip that shrinks visible width looks like a "min" jump on
+			-- small max-HP ticks (#17). Pin full width from the right whenever
+			-- overflow would truncate the shield (not only residual ≤0.12).
+			if ((tEnd - tStart) + 0.01 < tW) then
 				tFromRight = true;
 				tStart = max(0, 100 - tW);
 			end

@@ -390,6 +390,15 @@ function VUHDO_loadProfileNoInit(aName, aSkipSpellBindings)
 
 	VUHDO_CONFIG = VUHDO_smartLoadFromProfile(VUHDO_CONFIG, tProfile["CONFIG"], VUHDO_PROFILE_MODEL["CONFIG"],
 	VUHDO_PROFILE_MODEL_MATCH_ALL);
+	-- #15: smartLoad iterates dest keys; old skins without SHOW_ABSORBS leave the
+	-- session flag. Missing key → same default as first-login ensureSanity.
+	if (tProfile["CONFIG"] == nil or tProfile["CONFIG"]["SHOW_ABSORBS"] == nil) then
+		if (VUHDO_IS_NATIVE_ABSORBS) then
+			VUHDO_CONFIG["SHOW_ABSORBS"] = true;
+		else
+			VUHDO_CONFIG["SHOW_ABSORBS"] = false;
+		end
+	end
 	VUHDO_PANEL_SETUP = VUHDO_smartLoadFromProfile(VUHDO_PANEL_SETUP, tProfile["PANEL_SETUP"],
 	VUHDO_PROFILE_MODEL["PANEL_SETUP"], VUHDO_PROFILE_MODEL_MATCH_ALL);
 	VUHDO_POWER_TYPE_COLORS = VUHDO_smartLoadFromProfile(VUHDO_POWER_TYPE_COLORS, tProfile["POWER_TYPE_COLORS"],
