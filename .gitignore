@@ -2,6 +2,7 @@ VuhDoOptions/changelog.txt
 VuhDo/changelog.txt
 git_token.txt
 .cursor/
+RELEASE.md
 
 # Local release artifacts (uploaded via gh; do not commit)
 *.zip

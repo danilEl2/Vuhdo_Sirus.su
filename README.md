@@ -14,7 +14,6 @@
 - [Настройка](#настройка)
 - [Скриншоты](#скриншоты)
 - [История изменений](#история-изменений)
-- [Push / релиз (для разработки)](#push--релиз-для-разработки)
 - [Лицензия и благодарности](#лицензия-и-благодарности)
 
 ## Возможности
@@ -144,12 +143,6 @@
 - Улучшено: на Sirus поглощения включаются автоматически при первом запуске
 
 Полный список релизов: [Releases](https://github.com/danilEl2/Vuhdo_Sirus.su/releases).
-
-## Push / релиз (для разработки)
-
-Быстрый `git push` на `dev`, сборка zip и GitHub Release (PowerShell): см. **[RELEASE.md](RELEASE.md)**.
-
-Кратко: sync из `VuhDo`/`VuhDoOptions` → commit через файл сообщения (не bash-heredoc) → `git push -u origin HEAD` → при stable: `gh release create … --target dev --latest` + zip.
 
 ## Лицензия и благодарности
 
