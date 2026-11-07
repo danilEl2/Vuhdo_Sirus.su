@@ -2,3 +2,13 @@ VuhDoOptions/changelog.txt
 VuhDo/changelog.txt
 git_token.txt
 .cursor/
+
+# Local release artifacts (uploaded via gh; do not commit)
+*.zip
+Vuhdo_Sirus_*.zip
+
+# Temp commit / release note files (PowerShell helpers)
+COMMIT_EDITMSG_TEMP
+RELEASE_NOTES_TEMP.md
+.git/COMMIT_EDITMSG_TEMP
+.git/RELEASE_NOTES_TEMP.md
